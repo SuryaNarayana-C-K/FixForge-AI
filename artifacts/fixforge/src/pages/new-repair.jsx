@@ -48,7 +48,10 @@ export default function NewRepair() {
                 queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
                 setLocation(`/repairs/${repair.id}`);
             },
-            onError: () => setFormError('The repair could not be queued. Check the project connection and try again.'),
+            onError: (err) => {
+                const msg = err?.data?.error || err?.data?.message || err?.message;
+                setFormError(typeof msg === 'string' && msg !== '[object Object]' ? msg : 'The repair could not be queued. Check the project connection and try again.');
+            },
         });
         if (mode === 'new') {
             createProject.mutate({
@@ -60,7 +63,10 @@ export default function NewRepair() {
                 }
             }, {
                 onSuccess: (project) => queue(project.id),
-                onError: () => setFormError('The project could not be created. Check the repository details and try again.'),
+                onError: (err) => {
+                    const msg = err?.data?.error || err?.data?.message || err?.message;
+                    setFormError(typeof msg === 'string' && msg !== '[object Object]' ? msg : 'The project could not be created. Check the repository details and try again.');
+                },
             });
         }
         else

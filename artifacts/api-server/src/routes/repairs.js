@@ -64,10 +64,66 @@ async function getResolvedRepoWorkspace(repair) {
 
 const router = Router();
 
+export function formatErrorDetail(detail, fallback = "Unknown error") {
+  if (!detail) return fallback;
+  if (typeof detail === "string") {
+    const trimmed = detail.trim();
+    if (trimmed && trimmed !== "[object Object]") return trimmed;
+    return fallback;
+  }
+  if (Array.isArray(detail)) {
+    const formatted = detail
+      .map((item) => {
+        if (!item) return "";
+        if (typeof item === "string") return item;
+        const loc = Array.isArray(item.loc) ? item.loc.filter((p) => p !== "body").join(".") : "";
+        const msg = item.msg || item.message || (typeof item === "object" ? JSON.stringify(item) : String(item));
+        return loc ? `${loc}: ${msg}` : msg;
+      })
+      .filter(Boolean)
+      .join("; ");
+    if (formatted) return formatted;
+  }
+  if (typeof detail === "object") {
+    if (typeof detail.message === "string" && detail.message !== "[object Object]") return detail.message;
+    if (typeof detail.detail === "string" && detail.detail !== "[object Object]") return detail.detail;
+    if (typeof detail.error === "string" && detail.error !== "[object Object]") return detail.error;
+    if (detail.error && typeof detail.error === "object") {
+      const inner = formatErrorDetail(detail.error, "");
+      if (inner) return inner;
+    }
+    if (detail.detail && typeof detail.detail === "object") {
+      const inner = formatErrorDetail(detail.detail, "");
+      if (inner) return inner;
+    }
+    try {
+      const json = JSON.stringify(detail);
+      if (json && json !== "{}") return json;
+    } catch (_) {}
+  }
+  return fallback;
+}
+
 export function classifyAndSanitizeError(err, aiServiceUrl = "http://localhost:8000", context = "repair") {
-  let rawMessage = err?.message || String(err);
+  let rawMessage = "";
+  if (err?.message && err.message !== "[object Object]") {
+    rawMessage = err.message;
+  } else if (err?.detail) {
+    rawMessage = formatErrorDetail(err.detail);
+  } else if (err?.error) {
+    rawMessage = formatErrorDetail(err.error);
+  } else if (err && typeof err === "object") {
+    rawMessage = formatErrorDetail(err, "An unexpected internal error occurred.");
+  } else {
+    rawMessage = String(err || "An unexpected error occurred.");
+  }
+
+  if (rawMessage === "[object Object]" || rawMessage.includes("[object Object]")) {
+    rawMessage = err?.code ? `Operation failed with error code ${err.code}` : "Operation failed due to an unhandled error.";
+  }
+
   let code = err?.code || "AUTONOMOUS_REPAIR_FAILED";
-  let status = 502;
+  let status = typeof err?.status === "number" ? err.status : 502;
 
   // Redact potential API keys, GitHub tokens, Bearer tokens, connection strings
   rawMessage = rawMessage
@@ -677,7 +733,12 @@ router.post("/repairs/:repairId/sandbox/run", async (req, res) => {
 
     if (!resp.ok) {
       const errBody = await resp.json().catch(() => ({}));
-      throw new Error(errBody.detail || `AI service returned HTTP ${resp.status}`);
+      const detailMsg = formatErrorDetail(errBody.detail || errBody.error || errBody, `AI service returned HTTP ${resp.status}`);
+      const err = new Error(detailMsg);
+      err.code = errBody.code;
+      err.status = resp.status;
+      err.detail = errBody.detail;
+      throw err;
     }
     runResult = await resp.json();
   } catch (err) {
@@ -785,10 +846,11 @@ router.post("/repairs/:repairId/analyze", async (req, res) => {
 
     if (!resp.ok) {
       const errBody = await resp.json().catch(() => ({}));
-      const detailMsg = errBody.detail || errBody.error || `AI service returned HTTP ${resp.status}`;
+      const detailMsg = formatErrorDetail(errBody.detail || errBody.error || errBody, `AI service returned HTTP ${resp.status}`);
       const err = new Error(detailMsg);
       err.code = errBody.code;
       err.status = resp.status;
+      err.detail = errBody.detail;
       throw err;
     }
     aiResponse = await resp.json();
@@ -981,7 +1043,12 @@ router.post("/repairs/:repairId/root-cause", async (req, res) => {
 
     if (!resp.ok) {
       const errBody = await resp.json().catch(() => ({}));
-      throw new Error(errBody.detail || `AI service returned HTTP ${resp.status}`);
+      const detailMsg = formatErrorDetail(errBody.detail || errBody.error || errBody, `AI service returned HTTP ${resp.status}`);
+      const err = new Error(detailMsg);
+      err.code = errBody.code;
+      err.status = resp.status;
+      err.detail = errBody.detail;
+      throw err;
     }
     aiResponse = await resp.json();
   } catch (err) {
@@ -1123,7 +1190,12 @@ router.post("/repairs/:repairId/patch", async (req, res) => {
 
     if (!patchResp.ok) {
       const errBody = await patchResp.json().catch(() => ({}));
-      throw new Error(errBody.detail || `Patch generation failed with HTTP ${patchResp.status}`);
+      const detailMsg = formatErrorDetail(errBody.detail || errBody.error || errBody, `Patch generation failed with HTTP ${patchResp.status}`);
+      const err = new Error(detailMsg);
+      err.code = errBody.code;
+      err.status = patchResp.status;
+      err.detail = errBody.detail;
+      throw err;
     }
 
     const patchResult = await patchResp.json();
@@ -1248,7 +1320,12 @@ router.post("/repairs/:repairId/apply-patch", async (req, res) => {
 
     if (!resp.ok) {
       const errBody = await resp.json().catch(() => ({}));
-      throw new Error(errBody.detail || `AI service returned HTTP ${resp.status}`);
+      const detailMsg = formatErrorDetail(errBody.detail || errBody.error || errBody, `AI service returned HTTP ${resp.status}`);
+      const err = new Error(detailMsg);
+      err.code = errBody.code;
+      err.status = resp.status;
+      err.detail = errBody.detail;
+      throw err;
     }
     applyResponse = await resp.json();
   } catch (err) {
@@ -1446,10 +1523,11 @@ router.post("/repairs/:repairId/repair", async (req, res) => {
 
       if (!resp.ok) {
         const errBody = await resp.json().catch(() => ({}));
-        const detailMsg = errBody.detail || errBody.error || `AI service returned HTTP ${resp.status}`;
+        const detailMsg = formatErrorDetail(errBody.detail || errBody.error || errBody, `AI service returned HTTP ${resp.status}`);
         const err = new Error(detailMsg);
         err.code = errBody.code;
         err.status = resp.status;
+        err.detail = errBody.detail;
         throw err;
       }
       correctionResult = await resp.json();
@@ -2104,7 +2182,12 @@ router.post("/repairs/:repairId/verify", async (req, res) => {
 
     if (!resp.ok) {
       const errBody = await resp.json().catch(() => ({}));
-      throw new Error(errBody.detail || `AI service returned HTTP ${resp.status}`);
+      const detailMsg = formatErrorDetail(errBody.detail || errBody.error || errBody, `AI service returned HTTP ${resp.status}`);
+      const err = new Error(detailMsg);
+      err.code = errBody.code;
+      err.status = resp.status;
+      err.detail = errBody.detail;
+      throw err;
     }
     verifyResult = await resp.json();
   } catch (err) {

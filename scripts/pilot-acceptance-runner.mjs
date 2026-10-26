@@ -341,8 +341,9 @@ async function main() {
     if (!fs.existsSync(backupScript)) {
       throw new Error(`Backup script not found at ${backupScript}`);
     }
+    const { pathToFileURL } = await import("node:url");
     const { createDatabaseBackup, verifyDataRetentionSafety } = await import(
-      path.relative(__dirname, backupScript).replace(/\\/g, "/")
+      pathToFileURL(backupScript).href
     );
 
     const backupResult = await createDatabaseBackup();

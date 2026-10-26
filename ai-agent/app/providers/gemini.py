@@ -3,6 +3,7 @@ Official Google GenAI Python SDK Provider for FixForge.
 Implements model-agnostic LLMProvider interface with robust error sanitization.
 """
 
+import asyncio
 import json
 import os
 import re

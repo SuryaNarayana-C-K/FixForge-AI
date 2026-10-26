@@ -43,28 +43,83 @@ import { useAuth } from '@/hooks/use-auth';
 
 function extractErrorMessage(payload, fallback = 'Operation failed') {
   if (!payload) return fallback;
-  if (typeof payload === 'string') return payload;
-  if (typeof payload.error === 'string') return payload.error;
-  if (payload.error?.message && typeof payload.error.message === 'string') return payload.error.message;
-  if (payload.message && typeof payload.message === 'string') return payload.message;
-  if (payload.detail && typeof payload.detail === 'string') return payload.detail;
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim();
+    if (trimmed && trimmed !== '[object Object]') return trimmed;
+    return fallback;
+  }
+  if (payload instanceof Error && payload.message && payload.message !== '[object Object]') {
+    return payload.message;
+  }
+  if (typeof payload.error === 'string' && payload.error !== '[object Object]') {
+    return payload.error;
+  }
+  if (payload.error && typeof payload.error === 'object') {
+    if (typeof payload.error.message === 'string' && payload.error.message !== '[object Object]') return payload.error.message;
+    if (typeof payload.error.detail === 'string' && payload.error.detail !== '[object Object]') return payload.error.detail;
+    if (typeof payload.error.error === 'string' && payload.error.error !== '[object Object]') return payload.error.error;
+    try {
+      const json = JSON.stringify(payload.error);
+      if (json && json !== '{}') return json;
+    } catch (_) {}
+  }
+  if (typeof payload.message === 'string' && payload.message !== '[object Object]') return payload.message;
+  if (typeof payload.detail === 'string' && payload.detail !== '[object Object]') return payload.detail;
+  if (Array.isArray(payload.detail)) {
+    const formatted = payload.detail
+      .map((item) => {
+        if (!item) return '';
+        if (typeof item === 'string') return item;
+        const loc = Array.isArray(item.loc) ? item.loc.filter((p) => p !== 'body').join('.') : '';
+        const msg = item.msg || item.message || (typeof item === 'object' ? JSON.stringify(item) : String(item));
+        return loc ? `${loc}: ${msg}` : msg;
+      })
+      .filter(Boolean)
+      .join('; ');
+    if (formatted) return formatted;
+  }
+  if (Array.isArray(payload.errors) && payload.errors.length > 0) {
+    return payload.errors
+      .map((e) => (typeof e === 'string' ? e : e.message || e.msg || JSON.stringify(e)))
+      .filter(Boolean)
+      .join('; ');
+  }
+  if (typeof payload.code === 'string') return `Operation failed (${payload.code})`;
+  if (typeof payload === 'object') {
+    try {
+      const str = JSON.stringify(payload);
+      if (str && str !== '{}') return str;
+    } catch (_) {}
+  }
   return fallback;
 }
 
 export default function RepairDetail() {
   const params = useParams();
   const repairId = params.id || '';
+  const [isRepairing, setIsRepairing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSandboxRunning, setIsSandboxRunning] = useState(false);
+  const [isPatchGenerating, setIsPatchGenerating] = useState(false);
+  const [isPatchApplying, setIsPatchApplying] = useState(false);
+
   const repair = useGetRepair(repairId, {
-    query: { queryKey: getGetRepairQueryKey(repairId), enabled: Boolean(repairId) },
+    query: {
+      queryKey: getGetRepairQueryKey(repairId),
+      enabled: Boolean(repairId),
+      refetchInterval: (query) => {
+        const s = query.state.data?.status;
+        const isActive = ['queued', 'analyzing', 'running', 'self_correcting', 'testing'].includes(s);
+        return (isActive || isRepairing || isAnalyzing || isSandboxRunning || isPatchGenerating || isPatchApplying) ? 2000 : false;
+      },
+    },
   });
   const job = repair.data;
   const project = useGetProject(job?.projectId || '', {
     query: { queryKey: getGetProjectQueryKey(job?.projectId || ''), enabled: Boolean(job?.projectId) },
   });
 
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState(null);
-  const [isSandboxRunning, setIsSandboxRunning] = useState(false);
   const [sandboxError, setSandboxError] = useState(null);
   const [latestSandboxRun, setLatestSandboxRun] = useState(null);
 
@@ -73,16 +128,13 @@ export default function RepairDetail() {
   const [rootCauseError, setRootCauseError] = useState(null);
   const [latestRootCause, setLatestRootCause] = useState(null);
 
-  const [isPatchGenerating, setIsPatchGenerating] = useState(false);
   const [patchError, setPatchError] = useState(null);
   const [latestPatch, setLatestPatch] = useState(null);
 
-  const [isPatchApplying, setIsPatchApplying] = useState(false);
   const [applyError, setApplyError] = useState(null);
   const [latestApplyResult, setLatestApplyResult] = useState(null);
 
   // Milestone 5: Autonomous repair & verification states
-  const [isRepairing, setIsRepairing] = useState(false);
   const [repairError, setRepairError] = useState(null);
   const [latestRepairResult, setLatestRepairResult] = useState(null);
   const [fetchedAttempts, setFetchedAttempts] = useState([]);
@@ -132,9 +184,14 @@ export default function RepairDetail() {
     }
   };
 
+  const getAuthHeaders = (extra = {}) => ({
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...extra,
+  });
+
   const fetchGithubState = () => {
     if (!repairId) return;
-    fetch(`/api/repairs/${repairId}/github`)
+    fetch(`/api/repairs/${repairId}/github`, { headers: getAuthHeaders() })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => { if (data) setGithubData(data); })
       .catch(() => {});
@@ -142,7 +199,7 @@ export default function RepairDetail() {
 
   const fetchRepairMetrics = () => {
     if (!repairId) return;
-    fetch(`/api/repairs/${repairId}/metrics`)
+    fetch(`/api/repairs/${repairId}/metrics`, { headers: getAuthHeaders() })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => { if (data) setRepairMetrics(data); })
       .catch(() => {});
@@ -151,46 +208,46 @@ export default function RepairDetail() {
   const fetchIntelligenceData = () => {
     if (!repairId) return;
     fetch(`/api/repairs/${repairId}/plan`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: getAuthHeaders(),
     })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (d) setRepairPlan(d); })
       .catch(() => {});
 
     fetch(`/api/repairs/${repairId}/memory`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: getAuthHeaders(),
     })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (d) setRepairMemory(d); })
       .catch(() => {});
   };
 
+  const fetchAll = () => {
+    repair.refetch();
+    fetch(`/api/repairs/${repairId}/attempts`, { headers: getAuthHeaders() })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setFetchedAttempts(data))
+      .catch(() => {});
+    fetch(`/api/repairs/${repairId}/events`, { headers: getAuthHeaders() })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setFetchedEvents(data))
+      .catch(() => {});
+    fetchGithubState();
+    fetchRepairMetrics();
+    fetchIntelligenceData();
+  };
+
   useEffect(() => {
     if (!repairId) return;
-    const fetchAll = () => {
-      fetch(`/api/repairs/${repairId}/attempts`)
-        .then((r) => (r.ok ? r.json() : []))
-        .then((data) => setFetchedAttempts(data))
-        .catch(() => {});
-      fetch(`/api/repairs/${repairId}/events`)
-        .then((r) => (r.ok ? r.json() : []))
-        .then((data) => setFetchedEvents(data))
-        .catch(() => {});
-      fetchGithubState();
-      fetchRepairMetrics();
-      fetchIntelligenceData();
-    };
-
     fetchAll();
 
-    // Part 14: Polling while repair is running
     const isActive = ['queued', 'analyzing', 'running', 'self_correcting', 'testing'].includes(job?.status);
     let interval = null;
-    if (isActive) {
-      interval = setInterval(fetchAll, 3000);
+    if (isActive || isRepairing || isAnalyzing || isSandboxRunning || isPatchGenerating || isPatchApplying) {
+      interval = setInterval(fetchAll, 2500);
     }
     return () => { if (interval) clearInterval(interval); };
-  }, [repairId, job?.status, job?.iteration]);
+  }, [repairId, job?.status, job?.iteration, isRepairing, isAnalyzing, isSandboxRunning, isPatchGenerating, isPatchApplying]);
 
   async function handleApproveRepair() {
     setIsApproving(true);
@@ -314,7 +371,7 @@ export default function RepairDetail() {
     try {
       const res = await fetch(`/api/repairs/${repairId}/repair`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ maxAttempts: 3 }),
       });
       if (!res.ok) {
@@ -323,17 +380,13 @@ export default function RepairDetail() {
       }
       const data = await res.json();
       setLatestRepairResult(data);
-      await repair.refetch();
-      if (project.refetch) await project.refetch();
-      const attRes = await fetch(`/api/repairs/${repairId}/attempts`);
-      if (attRes.ok) setFetchedAttempts(await attRes.json());
-      const evRes = await fetch(`/api/repairs/${repairId}/events`);
-      if (evRes.ok) setFetchedEvents(await evRes.json());
     } catch (err) {
-      setRepairError(err.message);
+      setRepairError(extractErrorMessage(err, 'Autonomous repair failed'));
     } finally {
       setIsRepairing(false);
       await repair.refetch();
+      if (project.refetch) await project.refetch();
+      fetchAll();
     }
   }
 
@@ -341,7 +394,10 @@ export default function RepairDetail() {
     setIsAnalyzing(true);
     setAnalyzeError(null);
     try {
-      const res = await fetch(`/api/repairs/${repairId}/analyze`, { method: 'POST' });
+      const res = await fetch(`/api/repairs/${repairId}/analyze`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(extractErrorMessage(err, `Analysis failed (${res.status})`));
@@ -349,9 +405,10 @@ export default function RepairDetail() {
       await repair.refetch();
       if (project.refetch) await project.refetch();
     } catch (err) {
-      setAnalyzeError(err.message);
+      setAnalyzeError(extractErrorMessage(err, 'Analysis failed'));
     } finally {
       setIsAnalyzing(false);
+      fetchAll();
     }
   }
 
@@ -361,7 +418,7 @@ export default function RepairDetail() {
     try {
       const res = await fetch(`/api/repairs/${repairId}/sandbox/run`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ command: testCommand || 'pytest' }),
       });
       if (!res.ok) {
@@ -372,9 +429,10 @@ export default function RepairDetail() {
       setLatestSandboxRun(data);
       await repair.refetch();
     } catch (err) {
-      setSandboxError(err.message);
+      setSandboxError(extractErrorMessage(err, 'Sandbox run failed'));
     } finally {
       setIsSandboxRunning(false);
+      fetchAll();
     }
   }
 
@@ -382,7 +440,10 @@ export default function RepairDetail() {
     setIsRootCauseRunning(true);
     setRootCauseError(null);
     try {
-      const res = await fetch(`/api/repairs/${repairId}/root-cause`, { method: 'POST' });
+      const res = await fetch(`/api/repairs/${repairId}/root-cause`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(extractErrorMessage(err, `Root cause analysis failed (${res.status})`));
@@ -391,9 +452,10 @@ export default function RepairDetail() {
       setLatestRootCause(data.root_cause || data.rootCause);
       await repair.refetch();
     } catch (err) {
-      setRootCauseError(err.message);
+      setRootCauseError(extractErrorMessage(err, 'Root cause analysis failed'));
     } finally {
       setIsRootCauseRunning(false);
+      fetchAll();
     }
   }
 
@@ -403,7 +465,7 @@ export default function RepairDetail() {
     try {
       const res = await fetch(`/api/repairs/${repairId}/patch`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ rootCause: activeRootCause }),
       });
       if (!res.ok) {
@@ -415,9 +477,10 @@ export default function RepairDetail() {
       if (data.rootCause) setLatestRootCause(data.rootCause);
       await repair.refetch();
     } catch (err) {
-      setPatchError(err.message);
+      setPatchError(extractErrorMessage(err, 'Patch generation failed'));
     } finally {
       setIsPatchGenerating(false);
+      fetchAll();
     }
   }
 
@@ -427,7 +490,7 @@ export default function RepairDetail() {
     try {
       const res = await fetch(`/api/repairs/${repairId}/apply-patch`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           patchId: activePatch?.id,
           diff: activePatch?.diff,
@@ -441,9 +504,10 @@ export default function RepairDetail() {
       setLatestApplyResult(data.result);
       await repair.refetch();
     } catch (err) {
-      setApplyError(err.message);
+      setApplyError(extractErrorMessage(err, 'Patch application failed'));
     } finally {
       setIsPatchApplying(false);
+      fetchAll();
     }
   }
 

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node src/index.js",
     "start": "node src/index.js",
-    "test": "node --test --test-concurrency=1 tests/api.test.js tests/git.test.js tests/observability.test.js tests/m8-multi-language.test.js tests/security-m9.test.js tests/intelligence-m10.test.js tests/intelligence-m12-4.test.js tests/intelligence-m12-5.test.js tests/intelligence-m12-6.test.js tests/m13-1-sandbox-enforcement.test.js tests/m13-2-durable-recovery.test.js tests/m13-3-security-hardening.test.js tests/m13-4-security-verification.test.js"
+    "test": "node --test --test-concurrency=1 tests/api.test.js tests/git.test.js tests/observability.test.js tests/m8-multi-language.test.js tests/security-m9.test.js tests/intelligence-m10.test.js tests/intelligence-m12-4.test.js tests/intelligence-m12-5.test.js tests/intelligence-m12-6.test.js tests/m13-1-sandbox-enforcement.test.js tests/m13-2-durable-recovery.test.js tests/m13-3-security-hardening.test.js tests/m13-4-security-verification.test.js tests/repair-regression.test.js"
   },
   "dependencies": {
     "@workspace/api-zod": "^0.0.0",
