@@ -11,6 +11,7 @@ import {
   REPAIR_EVENT_TYPES,
 } from '../src/services/observability/event-service.js';
 import { MetricsService } from '../src/services/observability/metrics-service.js';
+import { enableTestAuthMock } from '../src/middlewares/auth.js';
 
 describe('FixForge Milestone 7 - Observability & Intelligence Tests', () => {
   let server;
@@ -19,6 +20,7 @@ describe('FixForge Milestone 7 - Observability & Intelligence Tests', () => {
   let testProjectId;
 
   before(async () => {
+    enableTestAuthMock(true);
     await seedDatabase();
     metricsService = new MetricsService();
 
@@ -407,5 +409,11 @@ describe('FixForge Milestone 7 - Observability & Intelligence Tests', () => {
       const res = await fetch(`${baseUrl}/api/repairs/non-existent-uuid-12345/metrics`);
       assert.equal(res.status, 404);
     });
+  });
+
+  after(async () => {
+    enableTestAuthMock(false);
+    if (server) await new Promise((resolve) => server.close(resolve));
+    await prisma.$disconnect();
   });
 });

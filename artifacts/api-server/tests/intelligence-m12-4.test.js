@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import app from '../src/app.js';
 import { prisma, seedDatabase, DEMO_USERS, DEMO_ORGS } from '@workspace/db';
 import { MetricsService } from '../src/services/observability/metrics-service.js';
+import { enableTestAuthMock } from '../src/middlewares/auth.js';
 
 describe('FixForge Milestone 12.4: Repair Intelligence & Benchmark Comparison Tests', () => {
   let server;
@@ -16,6 +17,7 @@ describe('FixForge Milestone 12.4: Repair Intelligence & Benchmark Comparison Te
   let projectBId;
 
   before(async () => {
+    enableTestAuthMock(true);
     await seedDatabase();
     metricsService = new MetricsService();
 
@@ -481,5 +483,11 @@ describe('FixForge Milestone 12.4: Repair Intelligence & Benchmark Comparison Te
       assert.equal(benchData.isBenchmark, true);
       assert.ok(benchData.note.includes('Golden-validation benchmark run'));
     });
+  });
+
+  after(async () => {
+    enableTestAuthMock(false);
+    if (server) await new Promise((resolve) => server.close(resolve));
+    await prisma.$disconnect();
   });
 });

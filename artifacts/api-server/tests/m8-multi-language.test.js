@@ -9,6 +9,7 @@ import {
   generatePullRequestDescription,
   generateRepairReport,
 } from '../src/services/git/report-generator.js';
+import { enableTestAuthMock } from '../src/middlewares/auth.js';
 
 describe('FixForge Milestone 8 - Multi-Language & Multi-Repository Engine Tests', () => {
   let server;
@@ -17,6 +18,7 @@ describe('FixForge Milestone 8 - Multi-Language & Multi-Repository Engine Tests'
   let testProjectId;
 
   before(async () => {
+    enableTestAuthMock(true);
     await seedDatabase();
     metricsService = new MetricsService();
 
@@ -35,6 +37,7 @@ describe('FixForge Milestone 8 - Multi-Language & Multi-Repository Engine Tests'
   });
 
   after(async () => {
+    enableTestAuthMock(false);
     await new Promise((resolve) => server.close(resolve));
     await prisma.$disconnect();
   });

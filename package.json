@@ -15,7 +15,9 @@
     "test": "npm --workspace=@workspace/api-server test",
     "test:backend": "npm --workspace=@workspace/api-server test",
     "db:generate": "npm --workspace=@workspace/db run db:generate",
-    "db:push": "npm --workspace=@workspace/db run db:push"
+    "db:push": "npm --workspace=@workspace/db run db:push",
+    "db:seed": "node scripts/seed-database.js",
+    "db:audit-tenants": "node scripts/audit-tenant-migration.js"
   },
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.3"

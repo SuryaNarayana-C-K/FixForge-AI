@@ -4,11 +4,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { prisma, seedDatabase } from '@workspace/db';
+import { prisma, seedDatabase, DEMO_ORGS } from '@workspace/db';
 import { LocalGitService } from '../src/services/git/local-git-service.js';
 import { MockGitProvider } from '../src/services/git/mock-git-provider.js';
 import { GitHubProvider } from '../src/services/git/github-provider.js';
 import { GitHubWorkflowService } from '../src/services/git/github-workflow-service.js';
+import { enableTestAuthMock } from '../src/middlewares/auth.js';
 
 describe('FixForge Milestone 6: Git & GitHub Integration Tests', () => {
   let tempRepoDir;
@@ -18,6 +19,7 @@ describe('FixForge Milestone 6: Git & GitHub Integration Tests', () => {
   let projectId;
 
   before(async () => {
+    enableTestAuthMock(true);
     await seedDatabase();
   });
 
@@ -50,6 +52,7 @@ describe('FixForge Milestone 6: Git & GitHub Integration Tests', () => {
     await prisma.project.create({
       data: {
         id: projectId,
+        organizationId: DEMO_ORGS.FIXFORGE_LABS.id,
         name: 'Git Test Project',
         repository: tempRepoDir,
         language: 'Python',
@@ -79,6 +82,7 @@ describe('FixForge Milestone 6: Git & GitHub Integration Tests', () => {
     const repair = await prisma.repairJob.create({
       data: {
         id: repairId,
+        organizationId: DEMO_ORGS.FIXFORGE_LABS.id,
         projectId,
         issue: 'ZeroDivisionError in calculator.py',
         model: 'mock-llm',
@@ -620,6 +624,10 @@ describe('FixForge Milestone 6: Git & GitHub Integration Tests', () => {
         return true;
       }
     );
+  });
+
+  after(async () => {
+    enableTestAuthMock(false);
   });
 });
 

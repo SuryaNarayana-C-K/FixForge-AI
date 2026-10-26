@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import app from '../src/app.js';
 import { prisma, seedDatabase, DEMO_USERS, DEMO_ORGS } from '@workspace/db';
 import { MetricsService } from '../src/services/observability/metrics-service.js';
+import { enableTestAuthMock } from '../src/middlewares/auth.js';
 
 describe('FixForge Milestone 12.5: Live Repair Accuracy & Independent Verification Tests', () => {
   let server;
@@ -13,6 +14,7 @@ describe('FixForge Milestone 12.5: Live Repair Accuracy & Independent Verificati
   let orgAId;
 
   before(async () => {
+    enableTestAuthMock(true);
     await seedDatabase();
     metricsService = new MetricsService();
 
@@ -134,5 +136,11 @@ describe('FixForge Milestone 12.5: Live Repair Accuracy & Independent Verificati
       const details = await metricsService.getBenchmarkRunDetails('invalid-id-that-does-not-exist');
       assert.equal(details, null);
     });
+  });
+
+  after(async () => {
+    enableTestAuthMock(false);
+    if (server) await new Promise((resolve) => server.close(resolve));
+    await prisma.$disconnect();
   });
 });

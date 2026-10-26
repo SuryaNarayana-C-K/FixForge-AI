@@ -40,11 +40,18 @@ router.post('/repairs/:repairId/github/pr', githubLimiter, async (req, res) => {
     process.env.NODE_ENV === 'production' || process.env.FIXFORGE_ENV === 'production';
 
   try {
-    // 0. Authentication check
-    if ((isProduction || req.headers['x-anonymous'] === 'true') && (!req.user || req.isAnonymous)) {
+    // 0. Authentication & tenant identity check
+    if (!req.user || req.isAnonymous) {
       res.status(401).json({
         error: 'Authentication required to create GitHub pull requests.',
         code: 'UNAUTHORIZED',
+      });
+      return;
+    }
+    if (!req.user.organizationId) {
+      res.status(403).json({
+        error: 'Tenant identity required: user account is not associated with an organization.',
+        code: 'TENANT_CONTEXT_REQUIRED',
       });
       return;
     }
@@ -77,9 +84,9 @@ router.post('/repairs/:repairId/github/pr', githubLimiter, async (req, res) => {
       return;
     }
 
-    // 2. Organization isolation check
+    // 2. Organization isolation check: fail closed if repairOrg is null or mismatched
     const repairOrg = repair.organizationId || repair.project?.organizationId;
-    if (req.user?.organizationId && repairOrg && repairOrg !== req.user.organizationId) {
+    if (!repairOrg || repairOrg !== req.user.organizationId) {
       await recordAuditLog({
         organizationId: req.user.organizationId,
         userId: req.user.id,
@@ -279,15 +286,20 @@ router.get('/repairs/:repairId/github', async (req, res) => {
     return;
   }
 
-  const isProduction =
-    process.env.NODE_ENV === 'production' || process.env.FIXFORGE_ENV === 'production';
-  if ((isProduction || req.headers['x-anonymous'] === 'true') && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: 'Authentication required.', code: 'UNAUTHORIZED' });
+    return;
+  }
+  if (!req.user.organizationId) {
+    res.status(403).json({
+      error: 'Tenant identity required: user account is not associated with an organization.',
+      code: 'TENANT_CONTEXT_REQUIRED',
+    });
     return;
   }
 
   const repairOrg = repair.organizationId || repair.project?.organizationId;
-  if (req.user?.organizationId && repairOrg && req.user.organizationId !== repairOrg) {
+  if (!repairOrg || repairOrg !== req.user.organizationId) {
     res.status(403).json({ error: 'Access denied: repair belongs to another organization.', code: 'ACCESS_DENIED' });
     return;
   }
@@ -326,14 +338,20 @@ router.get('/repairs/:repairId/github/report', async (req, res) => {
     return;
   }
 
-  const isProd = isProduction();
-  if ((isProd || req.headers['x-anonymous'] === 'true') && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: 'Authentication required.', code: 'UNAUTHORIZED' });
+    return;
+  }
+  if (!req.user.organizationId) {
+    res.status(403).json({
+      error: 'Tenant identity required: user account is not associated with an organization.',
+      code: 'TENANT_CONTEXT_REQUIRED',
+    });
     return;
   }
 
   const reportRepairOrg = repair.organizationId || repair.project?.organizationId;
-  if (req.user?.organizationId && reportRepairOrg && req.user.organizationId !== reportRepairOrg) {
+  if (!reportRepairOrg || reportRepairOrg !== req.user.organizationId) {
     res.status(403).json({ error: 'Access denied: repair belongs to another organization.', code: 'ACCESS_DENIED' });
     return;
   }

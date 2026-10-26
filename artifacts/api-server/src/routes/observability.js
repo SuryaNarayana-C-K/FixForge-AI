@@ -8,10 +8,15 @@ const router = Router();
 const metricsService = new MetricsService();
 
 function checkObservabilityAuth(req, res) {
-  const isProduction =
-    process.env.NODE_ENV === 'production' || process.env.FIXFORGE_ENV === 'production';
-  if ((isProduction || req.headers['x-anonymous'] === 'true' || req.isAnonymous) && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: 'Authentication required to access observability metrics.', code: 'UNAUTHORIZED' });
+    return false;
+  }
+  if (!req.user.organizationId) {
+    res.status(403).json({
+      error: 'Tenant identity required: user account is not associated with an organization.',
+      code: 'TENANT_CONTEXT_REQUIRED',
+    });
     return false;
   }
   return true;

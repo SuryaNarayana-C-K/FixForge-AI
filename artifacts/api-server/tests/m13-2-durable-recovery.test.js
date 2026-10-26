@@ -9,6 +9,7 @@ import {
   jobLifecycleService,
   JOB_STATES,
 } from '../src/services/lifecycle/job-lifecycle-service.js';
+import { enableTestAuthMock } from '../src/middlewares/auth.js';
 
 describe('FixForge Milestone 13.2: Durable Job Recovery & Production Reliability', () => {
   let server;
@@ -16,6 +17,7 @@ describe('FixForge Milestone 13.2: Durable Job Recovery & Production Reliability
   let testProjectId;
 
   before(async () => {
+    enableTestAuthMock(true);
     await seedDatabase();
 
     const proj = await prisma.project.create({
@@ -41,6 +43,7 @@ describe('FixForge Milestone 13.2: Durable Job Recovery & Production Reliability
   });
 
   after(async () => {
+    enableTestAuthMock(false);
     if (server) {
       await new Promise((resolve) => server.close(resolve));
     }

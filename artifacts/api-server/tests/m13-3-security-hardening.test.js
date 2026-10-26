@@ -7,6 +7,7 @@ import { validateProductionConfig } from '../src/lib/config.js';
 import { classifyAndSanitizeError } from '../src/routes/repairs.js';
 import { sanitizeLogText } from '../src/lib/logger.js';
 import { createDatabaseBackup, verifyDataRetentionSafety } from '../../../scripts/db-backup-restore.js';
+import { enableTestAuthMock } from '../src/middlewares/auth.js';
 
 describe('M13.3 Production Deployment Readiness & Security Hardening', () => {
   let server;
@@ -22,6 +23,7 @@ describe('M13.3 Production Deployment Readiness & Security Hardening', () => {
   let repairOrgB;
 
   before(async () => {
+    enableTestAuthMock(true);
     // 1. Setup isolated test organizations and users
     orgA = await prisma.organization.create({
       data: {
@@ -149,6 +151,7 @@ describe('M13.3 Production Deployment Readiness & Security Hardening', () => {
   });
 
   after(async () => {
+    enableTestAuthMock(false);
     if (server) {
       await new Promise((resolve) => server.close(resolve));
     }

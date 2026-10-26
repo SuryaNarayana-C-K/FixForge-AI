@@ -4,24 +4,26 @@ import {
   GetActivityResponse,
   GetDashboardSummaryResponse,
 } from "@workspace/api-zod";
-import { prisma, seedDatabase } from "@workspace/db";
+import { prisma } from "@workspace/db";
 
 const router = Router();
 
 router.get("/dashboard/summary", async (req, res) => {
-  await seedDatabase();
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.FIXFORGE_ENV === "production" ||
-    process.env.NODE_ENV === "staging" ||
-    process.env.FIXFORGE_ENV === "staging";
-  if ((isProduction || req.headers["x-anonymous"] === "true") && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: "Authentication required to access dashboard summary.", code: "UNAUTHORIZED" });
     return;
   }
 
-  const orgId = req.user?.organizationId;
-  const whereOrg = orgId ? { organizationId: orgId } : {};
+  const orgId = req.user.organizationId;
+  if (!orgId) {
+    res.status(403).json({
+      error: "Tenant identity required: user account is not associated with an organization.",
+      code: "TENANT_CONTEXT_REQUIRED",
+    });
+    return;
+  }
+
+  const whereOrg = { organizationId: orgId };
 
   const [activeRepairs, completedRepairs, failedRepairs, totalRepairs, verifiedRepairs] =
     await Promise.all([
@@ -74,14 +76,17 @@ router.get("/dashboard/summary", async (req, res) => {
 });
 
 router.get("/activity", async (req, res) => {
-  await seedDatabase();
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.FIXFORGE_ENV === "production" ||
-    process.env.NODE_ENV === "staging" ||
-    process.env.FIXFORGE_ENV === "staging";
-  if ((isProduction || req.headers["x-anonymous"] === "true") && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: "Authentication required to access activity stream.", code: "UNAUTHORIZED" });
+    return;
+  }
+
+  const orgId = req.user.organizationId;
+  if (!orgId) {
+    res.status(403).json({
+      error: "Tenant identity required: user account is not associated with an organization.",
+      code: "TENANT_CONTEXT_REQUIRED",
+    });
     return;
   }
 
@@ -91,11 +96,8 @@ router.get("/activity", async (req, res) => {
     return;
   }
 
-  const orgId = req.user?.organizationId;
-  const where = orgId ? { repairJob: { organizationId: orgId } } : {};
-
   const rows = await prisma.activityEvent.findMany({
-    where,
+    where: { repairJob: { organizationId: orgId } },
     orderBy: { createdAt: "desc" },
     take: parsed.data.limit,
   });

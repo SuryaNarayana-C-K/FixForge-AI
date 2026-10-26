@@ -27,22 +27,22 @@ const toProject = (p) => ({
 });
 
 router.get("/projects", async (req, res) => {
-  await seedDatabase();
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.FIXFORGE_ENV === "production" ||
-    process.env.NODE_ENV === "staging" ||
-    process.env.FIXFORGE_ENV === "staging";
-  if ((isProduction || req.headers["x-anonymous"] === "true") && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: "Authentication required.", code: "UNAUTHORIZED" });
     return;
   }
 
-  const orgId = req.user?.organizationId;
-  const where = orgId ? { organizationId: orgId } : {};
+  const orgId = req.user.organizationId;
+  if (!orgId) {
+    res.status(403).json({
+      error: "Tenant identity required: user account is not associated with an organization.",
+      code: "TENANT_CONTEXT_REQUIRED",
+    });
+    return;
+  }
 
   const projects = await prisma.project.findMany({
-    where,
+    where: { organizationId: orgId },
     include: {
       _count: {
         select: { repairJobs: true },
@@ -54,19 +54,23 @@ router.get("/projects", async (req, res) => {
 });
 
 router.post("/projects", async (req, res) => {
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.FIXFORGE_ENV === "production" ||
-    process.env.NODE_ENV === "staging" ||
-    process.env.FIXFORGE_ENV === "staging";
-  if ((isProduction || req.headers["x-anonymous"] === "true") && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: "Authentication required.", code: "UNAUTHORIZED" });
     return;
   }
 
-  if (req.user && !hasPermission(req.user.role, "project:create")) {
+  const orgId = req.user.organizationId;
+  if (!orgId) {
+    res.status(403).json({
+      error: "Tenant identity required: user account is not associated with an organization.",
+      code: "TENANT_CONTEXT_REQUIRED",
+    });
+    return;
+  }
+
+  if (!hasPermission(req.user.role, "project:create")) {
     await recordAuditLog({
-      organizationId: req.user.organizationId,
+      organizationId: orgId,
       userId: req.user.id,
       action: "ACCESS_DENIED",
       resourceType: "Project",
@@ -86,7 +90,6 @@ router.post("/projects", async (req, res) => {
   }
 
   const id = randomUUID();
-  const orgId = req.user?.organizationId || DEMO_ORGS.FIXFORGE_LABS.id;
   const parsedRemote = parseGitHubRepo(parsed.data.repository);
 
   let resolvedWs;
@@ -104,7 +107,7 @@ router.post("/projects", async (req, res) => {
     data: {
       id,
       organizationId: orgId,
-      createdById: req.user?.id || null,
+      createdById: req.user.id,
       name: parsed.data.name,
       repository: resolvedWs.relativePath,
       language: parsed.data.language,
@@ -123,7 +126,7 @@ router.post("/projects", async (req, res) => {
 
   await recordAuditLog({
     organizationId: orgId,
-    userId: req.user?.id || null,
+    userId: req.user.id,
     action: "PROJECT_CREATED",
     resourceType: "Project",
     resourceId: created.id,
@@ -140,13 +143,17 @@ router.get("/projects/:projectId", async (req, res) => {
     return;
   }
 
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.FIXFORGE_ENV === "production" ||
-    process.env.NODE_ENV === "staging" ||
-    process.env.FIXFORGE_ENV === "staging";
-  if ((isProduction || req.headers["x-anonymous"] === "true") && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: "Authentication required.", code: "UNAUTHORIZED" });
+    return;
+  }
+
+  const orgId = req.user.organizationId;
+  if (!orgId) {
+    res.status(403).json({
+      error: "Tenant identity required: user account is not associated with an organization.",
+      code: "TENANT_CONTEXT_REQUIRED",
+    });
     return;
   }
 
@@ -164,14 +171,10 @@ router.get("/projects/:projectId", async (req, res) => {
     return;
   }
 
-  // IDOR check: Enforce organization isolation
-  if (
-    req.user?.organizationId &&
-    project.organizationId &&
-    project.organizationId !== req.user.organizationId
-  ) {
+  // IDOR check: Enforce organization isolation (fail closed if project org is null or mismatched)
+  if (!project.organizationId || project.organizationId !== orgId) {
     await recordAuditLog({
-      organizationId: req.user.organizationId,
+      organizationId: orgId,
       userId: req.user.id,
       action: "ACCESS_DENIED",
       resourceType: "Project",

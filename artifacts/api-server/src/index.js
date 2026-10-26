@@ -15,10 +15,13 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-// Seed the database on startup if empty
-seedDatabase().catch((err) => {
-  logger.error({ err }, "Failed to seed database on startup");
-});
+// Demo seeding is an explicit, opt-in provisioning command (npm run db:seed).
+// Startup seeding only executes when explicitly requested via SEED_ON_STARTUP=true in non-production.
+if (process.env.SEED_ON_STARTUP === "true" && process.env.NODE_ENV !== "production") {
+  seedDatabase().catch((err) => {
+    logger.error({ err }, "Failed to seed database on startup");
+  });
+}
 
 // Reconcile interrupted jobs and orphaned containers on startup
 jobLifecycleService.reconcileInterruptedJobs().then((res) => {

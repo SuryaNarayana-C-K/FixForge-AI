@@ -127,14 +127,8 @@ export async function assertRepairAccess(repair, req, res, requiredPermission = 
     return false;
   }
 
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.FIXFORGE_ENV === "production" ||
-    process.env.NODE_ENV === "staging" ||
-    process.env.FIXFORGE_ENV === "staging";
-
-  // 1. In production or explicit anonymous, require authentication
-  if ((isProduction || req.headers["x-anonymous"] === "true") && (!req.user || req.isAnonymous)) {
+  // 1. Require authentication
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({
       error: "Authentication required to access repair resources.",
       code: "UNAUTHORIZED",
@@ -142,11 +136,21 @@ export async function assertRepairAccess(repair, req, res, requiredPermission = 
     return false;
   }
 
-  // 2. Role permission check
-  if (req.user && requiredPermission && !hasPermission(req.user.role, requiredPermission)) {
+  // 2. Tenant organization check: fail closed if user lacks organizationId
+  const userOrg = req.user.organizationId;
+  if (!userOrg) {
+    res.status(403).json({
+      error: "Tenant identity required: user account is not associated with an organization.",
+      code: "TENANT_CONTEXT_REQUIRED",
+    });
+    return false;
+  }
+
+  // 3. Role permission check
+  if (requiredPermission && !hasPermission(req.user.role, requiredPermission)) {
     await recordAuditLog({
-      organizationId: req.user?.organizationId,
-      userId: req.user?.id,
+      organizationId: userOrg,
+      userId: req.user.id,
       action: "ACCESS_DENIED",
       resourceType: "RepairJob",
       resourceId: repair.id,
@@ -164,20 +168,22 @@ export async function assertRepairAccess(repair, req, res, requiredPermission = 
     return false;
   }
 
-  // 3. Organization isolation check
-  const repairOrg = repair.organizationId || repair.project?.organizationId;
-  if (req.user?.organizationId && repairOrg && req.user.organizationId !== repairOrg) {
+  // 4. Organization isolation check: fail closed if repair.organizationId is missing or does not match userOrg
+  const repairOrg = repair.organizationId;
+  const projectOrg = repair.project?.organizationId;
+  if (!repairOrg || repairOrg !== userOrg || (projectOrg && projectOrg !== userOrg)) {
     await recordAuditLog({
-      organizationId: req.user.organizationId,
+      organizationId: userOrg,
       userId: req.user.id,
       action: "ACCESS_DENIED",
       resourceType: "RepairJob",
       resourceId: repair.id,
       repairId: repair.id,
       metadata: {
-        reason: "Cross-organization repair access attempt",
-        userOrg: req.user.organizationId,
-        repairOrg,
+        reason: "Cross-organization repair access attempt or unassigned tenant",
+        userOrg,
+        repairOrg: repairOrg || null,
+        projectOrg: projectOrg || null,
       },
     });
     res.status(403).json({
@@ -277,22 +283,22 @@ const toRepair = (r) => ({
 });
 
 router.get("/repairs", async (req, res) => {
-  await seedDatabase();
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.FIXFORGE_ENV === "production" ||
-    process.env.NODE_ENV === "staging" ||
-    process.env.FIXFORGE_ENV === "staging";
-  if ((isProduction || req.headers["x-anonymous"] === "true") && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: "Authentication required.", code: "UNAUTHORIZED" });
     return;
   }
 
-  const orgId = req.user?.organizationId;
-  const where = orgId ? { organizationId: orgId } : {};
+  const orgId = req.user.organizationId;
+  if (!orgId) {
+    res.status(403).json({
+      error: "Tenant identity required: user account is not associated with an organization.",
+      code: "TENANT_CONTEXT_REQUIRED",
+    });
+    return;
+  }
 
   const repairs = await prisma.repairJob.findMany({
-    where,
+    where: { organizationId: orgId },
     orderBy: { updatedAt: "desc" },
     include: {
       sandboxRuns: { orderBy: { createdAt: "asc" } },
@@ -304,19 +310,23 @@ router.get("/repairs", async (req, res) => {
 });
 
 router.post("/repairs", async (req, res) => {
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.FIXFORGE_ENV === "production" ||
-    process.env.NODE_ENV === "staging" ||
-    process.env.FIXFORGE_ENV === "staging";
-  if ((isProduction || req.headers["x-anonymous"] === "true") && (!req.user || req.isAnonymous)) {
+  if (!req.user || req.isAnonymous) {
     res.status(401).json({ error: "Authentication required to create repairs.", code: "UNAUTHORIZED" });
     return;
   }
 
-  if (req.user && !hasPermission(req.user.role, "repair:create")) {
+  const orgId = req.user.organizationId;
+  if (!orgId) {
+    res.status(403).json({
+      error: "Tenant identity required: user account is not associated with an organization.",
+      code: "TENANT_CONTEXT_REQUIRED",
+    });
+    return;
+  }
+
+  if (!hasPermission(req.user.role, "repair:create")) {
     await recordAuditLog({
-      organizationId: req.user.organizationId,
+      organizationId: orgId,
       userId: req.user.id,
       action: "ACCESS_DENIED",
       resourceType: "RepairJob",
@@ -343,14 +353,10 @@ router.post("/repairs", async (req, res) => {
     return;
   }
 
-  // Cross-organization validation
-  if (
-    req.user?.organizationId &&
-    project.organizationId &&
-    project.organizationId !== req.user.organizationId
-  ) {
+  // Cross-organization validation: fail closed if project org is null or mismatched
+  if (!project.organizationId || project.organizationId !== orgId) {
     await recordAuditLog({
-      organizationId: req.user.organizationId,
+      organizationId: orgId,
       userId: req.user.id,
       action: "ACCESS_DENIED",
       resourceType: "Project",
@@ -365,7 +371,6 @@ router.post("/repairs", async (req, res) => {
   }
 
   const id = randomUUID();
-  const orgId = req.user?.organizationId || project.organizationId || DEMO_ORGS.FIXFORGE_LABS.id;
   const idempotencyKey = req.headers["idempotency-key"] || req.body?.idempotencyKey || null;
 
   if (idempotencyKey) {

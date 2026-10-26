@@ -30,7 +30,49 @@ app.use(
     },
   }),
 );
-app.use(cors({ origin: true, credentials: true }));
+export function getStrictCorsOptions() {
+  const parseAllowedOrigins = () => {
+    const configured = (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGIN || "").trim();
+    if (configured) {
+      return configured.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    }
+    const isProd =
+      process.env.NODE_ENV === "production" ||
+      process.env.FIXFORGE_ENV === "production" ||
+      process.env.NODE_ENV === "staging" ||
+      process.env.FIXFORGE_ENV === "staging";
+    if (isProd) {
+      return [];
+    }
+    return [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:5173",
+      "http://localhost:8080",
+      "http://127.0.0.1:8080",
+    ];
+  };
+
+  return {
+    origin(origin, callback) {
+      // Allow non-browser requests without Origin header (curl, mobile apps, server-to-server)
+      if (!origin) {
+        return callback(null, true);
+      }
+      const allowed = parseAllowedOrigins();
+      const normalizedOrigin = origin.trim().toLowerCase();
+      if (allowed.includes(normalizedOrigin)) {
+        return callback(null, true);
+      }
+      // Strictly deny unauthorized origins: callback(null, false) prevents Access-Control-Allow-Origin header
+      return callback(null, false);
+    },
+    credentials: true,
+  };
+}
+
+app.use(cors(getStrictCorsOptions()));
 app.use(cookieParser());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));

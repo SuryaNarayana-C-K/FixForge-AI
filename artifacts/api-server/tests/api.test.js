@@ -3,12 +3,14 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import app from "../src/app.js";
 import { prisma, seedDatabase } from "@workspace/db";
+import { enableTestAuthMock } from "../src/middlewares/auth.js";
 
 describe("FixForge Node API Server", () => {
   let server;
   let baseUrl;
 
   before(async () => {
+    enableTestAuthMock(true);
     await seedDatabase();
     await new Promise((resolve) => {
       server = http.createServer(app);
@@ -21,6 +23,7 @@ describe("FixForge Node API Server", () => {
   });
 
   after(async () => {
+    enableTestAuthMock(false);
     await new Promise((resolve) => server.close(resolve));
     await prisma.$disconnect();
   });

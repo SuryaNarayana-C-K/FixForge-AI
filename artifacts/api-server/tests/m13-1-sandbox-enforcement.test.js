@@ -8,6 +8,8 @@ import {
   JobLifecycleService,
   JOB_STATES,
 } from '../src/services/lifecycle/job-lifecycle-service.js';
+import { enableTestAuthMock } from '../src/middlewares/auth.js';
+import { DEMO_ORGS } from '@workspace/db';
 
 describe('FixForge Milestone 13.1: Docker Sandbox Enforcement & Job Lifecycle Reliability', () => {
   let server;
@@ -15,12 +17,14 @@ describe('FixForge Milestone 13.1: Docker Sandbox Enforcement & Job Lifecycle Re
   let testProjectId;
 
   before(async () => {
+    enableTestAuthMock(true);
     await seedDatabase();
 
     // Create a dedicated test project
     const proj = await prisma.project.create({
       data: {
         id: randomUUID(),
+        organizationId: DEMO_ORGS.FIXFORGE_LABS.id,
         name: 'M13.1 Lifecycle Test Repo',
         repository: 'examples/buggy-python-project',
         language: 'Python',
@@ -39,9 +43,11 @@ describe('FixForge Milestone 13.1: Docker Sandbox Enforcement & Job Lifecycle Re
   });
 
   after(async () => {
+    enableTestAuthMock(false);
     if (server) {
       await new Promise((resolve) => server.close(resolve));
     }
+    await prisma.$disconnect();
   });
 
   describe('1. Job Lifecycle State Machine & Transition Rules', () => {

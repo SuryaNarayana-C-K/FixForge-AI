@@ -55,6 +55,23 @@ export function hasPermission(role, permission) {
   return permissions.includes(permission);
 }
 
+export let testAuthMockEnabled = false;
+
+export function enableTestAuthMock(enabled = true) {
+  const nodeEnv = (process.env.NODE_ENV || "").trim().toLowerCase();
+  const fixforgeEnv = (process.env.FIXFORGE_ENV || "").trim().toLowerCase();
+  const isProdOrStaging =
+    nodeEnv === "production" ||
+    fixforgeEnv === "production" ||
+    nodeEnv === "staging" ||
+    fixforgeEnv === "staging";
+  if (isProdOrStaging && enabled) {
+    testAuthMockEnabled = false;
+    return;
+  }
+  testAuthMockEnabled = Boolean(enabled);
+}
+
 export async function authenticate(req, res, next) {
   let token = null;
 
@@ -132,26 +149,29 @@ export async function authenticate(req, res, next) {
     nodeEnv === "staging" ||
     fixforgeEnv === "staging";
 
-  // In production and staging, refuse demo fallback and reject spoofed x-demo-role
-  if (isProductionOrStaging) {
-    req.user = null;
-    req.isAnonymous = true;
-    req.isDemoFallback = false;
+  // In production and staging, or by default in application paths, demo fallback is strictly prohibited.
+  // Test-only mock is strictly isolated to test setups that explicitly opt-in via enableTestAuthMock() or FIXFORGE_ALLOW_TEST_AUTH_MOCK.
+  const allowTestMock = !isProductionOrStaging && (testAuthMockEnabled || process.env.FIXFORGE_ALLOW_TEST_AUTH_MOCK === "true");
+
+  if (allowTestMock && req.headers["x-anonymous"] !== "true") {
+    const mockRole = req.headers["x-test-mock-role"] || req.headers["x-demo-role"] || "ADMIN";
+    req.user = {
+      id: DEMO_USERS.ADMIN.id,
+      email: DEMO_USERS.ADMIN.email,
+      name: DEMO_USERS.ADMIN.name,
+      role: mockRole,
+      organizationId: DEMO_ORGS.FIXFORGE_LABS.id,
+      organizationName: DEMO_ORGS.FIXFORGE_LABS.name,
+    };
+    req.isDemoFallback = true;
     next();
     return;
   }
 
-  // Backward compatibility / demo mode for development test suites (M1-M8)
-  const demoRole = req.headers["x-demo-role"] || "ADMIN";
-  req.user = {
-    id: DEMO_USERS.ADMIN.id,
-    email: DEMO_USERS.ADMIN.email,
-    name: DEMO_USERS.ADMIN.name,
-    role: demoRole,
-    organizationId: DEMO_ORGS.FIXFORGE_LABS.id,
-    organizationName: DEMO_ORGS.FIXFORGE_LABS.name,
-  };
-  req.isDemoFallback = true;
+  // Application authentication path: fail closed for unauthenticated requests
+  req.user = null;
+  req.isAnonymous = true;
+  req.isDemoFallback = false;
   next();
 }
 

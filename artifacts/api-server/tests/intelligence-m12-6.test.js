@@ -4,6 +4,7 @@ import http from 'node:http';
 import app from '../src/app.js';
 import { seedDatabase, DEMO_ORGS } from '@workspace/db';
 import { MetricsService } from '../src/services/observability/metrics-service.js';
+import { enableTestAuthMock } from '../src/middlewares/auth.js';
 
 describe('FixForge Milestone 12.6: Benchmark Reliability & Run Comparison Tests', () => {
   let server;
@@ -11,6 +12,7 @@ describe('FixForge Milestone 12.6: Benchmark Reliability & Run Comparison Tests'
   let metricsService;
 
   before(async () => {
+    enableTestAuthMock(true);
     await seedDatabase();
     metricsService = new MetricsService();
 
@@ -25,6 +27,7 @@ describe('FixForge Milestone 12.6: Benchmark Reliability & Run Comparison Tests'
   });
 
   after(async () => {
+    enableTestAuthMock(false);
     if (server) {
       await new Promise((resolve) => server.close(resolve));
     }
