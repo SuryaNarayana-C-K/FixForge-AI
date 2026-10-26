@@ -1,0 +1,17 @@
+{
+  "id": "live_py_precondition_invalid",
+  "name": "Live Python Baseline Precondition Violation (Already Passing)",
+  "language": "python",
+  "category": "invalid_case",
+  "eligible_for_repair": false,
+  "test_command": "pytest tests/test_pass.py",
+  "test_framework": "pytest",
+  "target_test_file": "tests/test_pass.py",
+  "independent_test_command": "pytest tests/test_pass.py",
+  "independent_test_framework": "pytest",
+  "expected_baseline_status": "FAILED",
+  "files": ["ok.py"],
+  "protected_test_files": [
+    "tests/test_pass.py"
+  ]
+}

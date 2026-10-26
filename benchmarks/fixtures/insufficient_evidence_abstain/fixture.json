@@ -1,0 +1,33 @@
+{
+  "id": "insufficient_evidence_abstain",
+  "name": "Insufficient evidence requiring abstention",
+  "category": "insufficient_evidence",
+  "description": "Test failure provides no traceback into repository source code and no actionable specification, requiring safe abstention rather than hallucinated repair.",
+  "expected_behavior": "Engine recognizes absence of causal evidence, ranks assumptions low, and safely abstains.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": false,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "CORRECT_ABSTENTION",
+  "expected_abstention": true,
+  "candidate_hypotheses": [
+    {
+      "hypothesis_id": "hyp-1",
+      "root_cause_statement": "Unknown failure reason with ungrounded token specification.",
+      "relevant_files": [],
+      "supporting_evidence": ["test_opaque_requirement failed with generic message"],
+      "observed_behavior": "AssertionError: Verification token check failed",
+      "expected_behavior": "Unknown expected value or token contract",
+      "causal_explanation": "Insufficient code and traceback evidence to determine defect location.",
+      "confidence_score": 0.15,
+      "missing_evidence_or_assumptions": [
+        "No source code frames in failure traceback",
+        "No specification for required token or data format",
+        "True requirement cannot be inferred safely"
+      ],
+      "proposed_repair_strategy": "Abstain from repair and escalate for clarification"
+    }
+  ],
+  "relative_path": "insufficient_evidence_abstain"
+}

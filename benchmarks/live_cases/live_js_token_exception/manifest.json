@@ -1,0 +1,19 @@
+{
+  "id": "live_js_token_exception",
+  "name": "Live JavaScript Tokenizer Exception Handling Defect",
+  "language": "javascript",
+  "category": "exception",
+  "eligible_for_repair": true,
+  "test_command": "node --test tests/tokenizer.test.mjs tests/regression.test.mjs",
+  "test_framework": "node_test",
+  "target_test_file": "tests/tokenizer.test.mjs",
+  "independent_test_command": "node --test independent_tests/tokenizer_held_out.test.mjs",
+  "independent_test_framework": "node_test",
+  "expected_baseline_status": "FAILED",
+  "files": ["tokenizer.mjs"],
+  "protected_test_files": [
+    "tests/tokenizer.test.mjs",
+    "tests/regression.test.mjs"
+  ],
+  "sample_patch": "--- a/tokenizer.mjs\n+++ b/tokenizer.mjs\n@@ -3,3 +3,3 @@\n-  return rawToken.trim().toLowerCase();\n+  return (rawToken ?? \"\").trim().toLowerCase();\n"
+}

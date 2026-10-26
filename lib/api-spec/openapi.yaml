@@ -172,6 +172,268 @@ paths:
                 $ref: "#/components/schemas/RepairJob"
         "404":
           description: Repair job not found
+  /repairs/{repairId}/analyze:
+    post:
+      operationId: analyzeRepair
+      tags: [repairs]
+      summary: Analyze repository and run baseline tests for a repair job
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      responses:
+        "200":
+          description: Baseline analysis results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaselineAnalysisResult"
+        "404":
+          description: Repair job not found
+        "500":
+          description: Analysis execution error
+  /repairs/{repairId}/sandbox/run:
+    post:
+      operationId: runInSandbox
+      tags: [repairs, sandbox]
+      summary: Execute test suite inside Docker sandbox
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      responses:
+        "200":
+          description: Sandbox run result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxRun"
+        "404":
+          description: Repair job not found
+        "502":
+          description: Sandbox execution error
+  /repairs/{repairId}/sandbox/runs:
+    get:
+      operationId: listSandboxRuns
+      tags: [repairs, sandbox]
+      summary: List sandbox execution history for a repair job
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      responses:
+        "200":
+          description: List of sandbox execution records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SandboxRun"
+  /repairs/{repairId}/root-cause:
+    post:
+      operationId: getRootCause
+      tags: [repairs, ai]
+      summary: Analyze test failures and identify root cause
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      responses:
+        "200":
+          description: Root cause analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RootCauseResult"
+        "404":
+          description: Repair job not found
+        "502":
+          description: AI service error
+  /repairs/{repairId}/patch:
+    get:
+      operationId: getLatestPatch
+      tags: [repairs, ai]
+      summary: Get latest generated patch for a repair job
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      responses:
+        "200":
+          description: Latest patch record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patch"
+        "404":
+          description: Patch not found
+    post:
+      operationId: generatePatch
+      tags: [repairs, ai]
+      summary: Plan and generate unified diff patch
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      responses:
+        "200":
+          description: Generated and validated patch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patch"
+        "404":
+          description: Repair job not found
+        "502":
+          description: AI service error
+  /repairs/{repairId}/apply-patch:
+    post:
+      operationId: applyPatch
+      tags: [repairs, ai]
+      summary: Apply validated patch to workspace with backups
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patchId:
+                  type: string
+                diff:
+                  type: string
+      responses:
+        "200":
+          description: Patch application result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  applied:
+                    type: boolean
+                  status:
+                    type: string
+                  patch:
+                    $ref: "#/components/schemas/Patch"
+        "400":
+          description: Application failed
+  /repairs/{repairId}/repair:
+    post:
+      operationId: startAutonomousRepair
+      tags: [repairs, ai]
+      summary: Execute complete autonomous self-correction repair loop
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                maxAttempts:
+                  type: integer
+                  default: 3
+      responses:
+        "200":
+          description: Autonomous repair completion status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  status:
+                    type: string
+                  is_verified:
+                    type: boolean
+                  attempt_count:
+                    type: integer
+                  final_status:
+                    type: string
+                  attempt_history:
+                    type: array
+                    items:
+                      type: object
+        "404":
+          description: Repair job not found
+        "409":
+          description: Repair job is already running
+        "502":
+          description: AI service offline or error
+  /repairs/{repairId}/attempts:
+    get:
+      operationId: listRepairAttempts
+      tags: [repairs]
+      summary: List all repair attempts for a repair job
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      responses:
+        "200":
+          description: List of repair attempts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RepairAttempt"
+        "404":
+          description: Repair job not found
+  /repairs/{repairId}/events:
+    get:
+      operationId: listRepairEvents
+      tags: [repairs]
+      summary: List all activity events for a repair job
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      responses:
+        "200":
+          description: List of activity events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityEvent"
+        "404":
+          description: Repair job not found
+  /repairs/{repairId}/verify:
+    post:
+      operationId: verifyRepair
+      tags: [repairs, verification]
+      summary: Execute test verification inside sandbox for a repair job
+      parameters:
+        - $ref: "#/components/parameters/RepairId"
+      responses:
+        "200":
+          description: Verification outcome
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationResult"
+        "404":
+          description: Repair job not found
+        "502":
+          description: Verification execution error
+  /sandbox/health:
+
+    get:
+      operationId: getSandboxHealth
+      tags: [sandbox, health]
+      summary: Check Docker sandbox daemon and container status
+      responses:
+        "200":
+          description: Sandbox status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  docker_available:
+                    type: boolean
+                  runner:
+                    type: string
+                  version:
+                    type: string
+                    nullable: true
+                  image:
+                    type: string
+                  detail:
+                    type: string
+                required: [docker_available, runner]
 components:
   parameters:
     ProjectId:
@@ -291,6 +553,20 @@ components:
           type: integer
         testsTotal:
           type: integer
+        testCommand:
+          type: string
+          nullable: true
+        analysis:
+          type: object
+          nullable: true
+        baselineResult:
+          type: object
+          nullable: true
+        failures:
+          type: array
+          items:
+            type: object
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -350,4 +626,209 @@ components:
           type: string
           format: date-time
       required: [id, event, status, message, repairId, createdAt]
+    BaselineAnalysisResult:
+      type: object
+      properties:
+        jobId:
+          type: string
+        status:
+          type: string
+        repository:
+          type: object
+          properties:
+            language:
+              type: string
+            testFramework:
+              type: string
+              nullable: true
+            testCommand:
+              type: string
+              nullable: true
+        baseline:
+          type: object
+          properties:
+            total:
+              type: integer
+            passed:
+              type: integer
+            failed:
+              type: integer
+            skipped:
+              type: integer
+            errors:
+              type: integer
+            duration:
+              type: number
+        failures:
+          type: array
+          items:
+            type: object
+        analysis:
+          type: object
+      required: [jobId, status, repository, baseline, failures]
+    SandboxRun:
+      type: object
+      properties:
+        id:
+          type: string
+        repairJobId:
+          type: string
+        command:
+          type: string
+        status:
+          type: string
+        exitCode:
+          type: integer
+        stdout:
+          type: string
+        stderr:
+          type: string
+        duration:
+          type: number
+        timedOut:
+          type: boolean
+        sandboxed:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, repairJobId, command, status, exitCode, stdout, stderr, duration, timedOut, sandboxed, createdAt]
+    Patch:
+      type: object
+      properties:
+        id:
+          type: string
+        repairJobId:
+          type: string
+        attemptNumber:
+          type: integer
+        diff:
+          type: string
+        filesChanged:
+          type: array
+          items:
+            type: string
+        linesAdded:
+          type: integer
+        linesRemoved:
+          type: integer
+        rootCause:
+          type: object
+          nullable: true
+        patchPlan:
+          type: object
+          nullable: true
+        validationResult:
+          type: object
+          nullable: true
+        applicationResult:
+          type: object
+          nullable: true
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, repairJobId, diff, filesChanged, linesAdded, linesRemoved, status, createdAt]
+    RootCauseResult:
+      type: object
+      properties:
+        jobId:
+          type: string
+        rootCause:
+          type: object
+        relevantFiles:
+          type: array
+          items:
+            type: string
+      required: [jobId, rootCause, relevantFiles]
+    RepairAttempt:
+      type: object
+      properties:
+        id:
+          type: string
+        repairJobId:
+          type: string
+        attemptNumber:
+          type: integer
+        status:
+          type: string
+        failureSummary:
+          type: string
+          nullable: true
+        rootCause:
+          type: object
+          nullable: true
+        rootCauseConfidence:
+          type: number
+          nullable: true
+        patchId:
+          type: string
+          nullable: true
+        testRunId:
+          type: string
+          nullable: true
+        sandboxRunId:
+          type: string
+          nullable: true
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        duration:
+          type: number
+          nullable: true
+        rollbackPerformed:
+          type: boolean
+        verificationResult:
+          type: object
+          nullable: true
+        patchDiff:
+          type: string
+          nullable: true
+        patchHash:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, repairJobId, attemptNumber, status, createdAt]
+    VerificationResult:
+      type: object
+      properties:
+        status:
+          type: string
+        exit_code:
+          type: integer
+        passed:
+          type: integer
+        failed:
+          type: integer
+        skipped:
+          type: integer
+        total:
+          type: integer
+        stdout:
+          type: string
+        stderr:
+          type: string
+        duration:
+          type: number
+        timed_out:
+          type: boolean
+        regression_detected:
+          type: boolean
+        failure_signatures:
+          type: array
+          items:
+            type: object
+      required: [status, exit_code, passed, failed, total]
+
 

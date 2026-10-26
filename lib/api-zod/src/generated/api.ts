@@ -22,11 +22,11 @@ export const HealthCheckResponse = zod.object({
  * @summary Get service health
  */
 export const GetServicesHealthResponse = zod.object({
-  "status": zod.enum(['operational', 'degraded', 'offline']),
+  "status": zod.string(),
   "checkedAt": zod.coerce.date(),
   "services": zod.array(zod.object({
   "name": zod.string(),
-  "status": zod.enum(['operational', 'degraded', 'offline']),
+  "status": zod.string(),
   "latencyMs": zod.number().nullable(),
   "detail": zod.string()
 }))
@@ -78,7 +78,7 @@ export const ListProjectsResponseItem = zod.object({
   "repository": zod.string(),
   "language": zod.string(),
   "testFramework": zod.string().nullable(),
-  "status": zod.enum(['ready', 'analyzing', 'repairing', 'verified', 'failed']),
+  "status": zod.string(),
   "repairCount": zod.number().int(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
@@ -106,7 +106,7 @@ export const CreateProjectResponse = zod.object({
   "repository": zod.string(),
   "language": zod.string(),
   "testFramework": zod.string().nullable(),
-  "status": zod.enum(['ready', 'analyzing', 'repairing', 'verified', 'failed']),
+  "status": zod.string(),
   "repairCount": zod.number().int(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
@@ -126,7 +126,7 @@ export const GetProjectResponse = zod.object({
   "repository": zod.string(),
   "language": zod.string(),
   "testFramework": zod.string().nullable(),
-  "status": zod.enum(['ready', 'analyzing', 'repairing', 'verified', 'failed']),
+  "status": zod.string(),
   "repairCount": zod.number().int(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
@@ -143,14 +143,24 @@ export const ListRepairsResponseItem = zod.object({
   "model": zod.string(),
   "verificationLevel": zod.enum(['quick', 'standard', 'full']),
   "maxIterations": zod.number().int(),
-  "status": zod.enum(['queued', 'analyzing', 'patching', 'testing', 'self_correcting', 'verifying', 'verified', 'failed', 'timeout', 'cancelled']),
+  "status": zod.string(),
   "iteration": zod.number().int(),
   "testsPassed": zod.number().int(),
   "testsTotal": zod.number().int(),
+  "testCommand": zod.string().nullish(),
+  "analysis": zod.object({
+
+}).passthrough().nullish(),
+  "baselineResult": zod.object({
+
+}).passthrough().nullish(),
+  "failures": zod.array(zod.object({
+
+}).passthrough()).nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
-export const ListRepairsResponse = zod.array(ListRepairsResponseItem)
+export const ListRepairsResponse = zod.array(ListRepairsResponseItem.passthrough())
 
 
 /**
@@ -166,7 +176,11 @@ export const CreateRepairBody = zod.object({
   "issue": zod.string().min(1),
   "model": zod.string(),
   "verificationLevel": zod.enum(['quick', 'standard', 'full']),
-  "maxIterations": zod.number().int().min(1).max(createRepairBodyMaxIterationsMax)
+  "maxIterations": zod.number().int().min(1).max(createRepairBodyMaxIterationsMax),
+  "language": zod.string().nullish(),
+  "framework": zod.string().nullish(),
+  "testFramework": zod.string().nullish(),
+  "packageManager": zod.string().nullish()
 })
 
 export const CreateRepairResponse = zod.object({
@@ -176,13 +190,23 @@ export const CreateRepairResponse = zod.object({
   "model": zod.string(),
   "verificationLevel": zod.enum(['quick', 'standard', 'full']),
   "maxIterations": zod.number().int(),
-  "status": zod.enum(['queued', 'analyzing', 'patching', 'testing', 'self_correcting', 'verifying', 'verified', 'failed', 'timeout', 'cancelled']),
+  "status": zod.string(),
   "iteration": zod.number().int(),
   "testsPassed": zod.number().int(),
   "testsTotal": zod.number().int(),
+  "testCommand": zod.string().nullish(),
+  "analysis": zod.object({
+
+}).passthrough().nullish(),
+  "baselineResult": zod.object({
+
+}).passthrough().nullish(),
+  "failures": zod.array(zod.object({
+
+}).passthrough()).nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
-})
+}).passthrough()
 
 
 /**
@@ -199,12 +223,269 @@ export const GetRepairResponse = zod.object({
   "model": zod.string(),
   "verificationLevel": zod.enum(['quick', 'standard', 'full']),
   "maxIterations": zod.number().int(),
-  "status": zod.enum(['queued', 'analyzing', 'patching', 'testing', 'self_correcting', 'verifying', 'verified', 'failed', 'timeout', 'cancelled']),
+  "status": zod.string(),
   "iteration": zod.number().int(),
   "testsPassed": zod.number().int(),
   "testsTotal": zod.number().int(),
+  "testCommand": zod.string().nullish(),
+  "analysis": zod.object({
+
+}).passthrough().nullish(),
+  "baselineResult": zod.object({
+
+}).passthrough().nullish(),
+  "failures": zod.array(zod.object({
+
+}).passthrough()).nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
+}).passthrough()
+
+
+/**
+ * @summary Analyze repository and run baseline tests for a repair job
+ */
+export const AnalyzeRepairParams = zod.object({
+  "repairId": zod.coerce.string().uuid()
+})
+
+export const AnalyzeRepairResponse = zod.object({
+  "jobId": zod.string(),
+  "status": zod.string(),
+  "repository": zod.object({
+  "language": zod.string().optional(),
+  "testFramework": zod.string().nullish(),
+  "testCommand": zod.string().nullish()
+}),
+  "baseline": zod.object({
+  "total": zod.number().int().optional(),
+  "passed": zod.number().int().optional(),
+  "failed": zod.number().int().optional(),
+  "skipped": zod.number().int().optional(),
+  "errors": zod.number().int().optional(),
+  "duration": zod.number().optional()
+}),
+  "failures": zod.array(zod.object({
+
+}).passthrough()),
+  "analysis": zod.object({
+
+}).passthrough().optional()
 })
 
 
+/**
+ * @summary Execute test suite inside Docker sandbox
+ */
+export const RunInSandboxParams = zod.object({
+  "repairId": zod.coerce.string().uuid()
+})
+
+export const RunInSandboxResponse = zod.object({
+  "id": zod.string(),
+  "repairJobId": zod.string(),
+  "command": zod.string(),
+  "status": zod.string(),
+  "exitCode": zod.number().int(),
+  "stdout": zod.string(),
+  "stderr": zod.string(),
+  "duration": zod.number(),
+  "timedOut": zod.boolean(),
+  "sandboxed": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List sandbox execution history for a repair job
+ */
+export const ListSandboxRunsParams = zod.object({
+  "repairId": zod.coerce.string().uuid()
+})
+
+export const ListSandboxRunsResponseItem = zod.object({
+  "id": zod.string(),
+  "repairJobId": zod.string(),
+  "command": zod.string(),
+  "status": zod.string(),
+  "exitCode": zod.number().int(),
+  "stdout": zod.string(),
+  "stderr": zod.string(),
+  "duration": zod.number(),
+  "timedOut": zod.boolean(),
+  "sandboxed": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListSandboxRunsResponse = zod.array(ListSandboxRunsResponseItem)
+
+
+/**
+ * @summary Analyze test failures and identify root cause
+ */
+export const GetRootCauseParams = zod.object({
+  "repairId": zod.coerce.string().uuid()
+})
+
+export const GetRootCauseResponse = zod.object({
+  "jobId": zod.string(),
+  "rootCause": zod.object({
+
+}).passthrough(),
+  "relevantFiles": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Get latest generated patch for a repair job
+ */
+export const GetLatestPatchParams = zod.object({
+  "repairId": zod.coerce.string().uuid()
+})
+
+export const GetLatestPatchResponse = zod.object({
+  "id": zod.string(),
+  "repairJobId": zod.string(),
+  "attemptNumber": zod.number().int().optional(),
+  "diff": zod.string(),
+  "filesChanged": zod.array(zod.string()),
+  "linesAdded": zod.number().int(),
+  "linesRemoved": zod.number().int(),
+  "rootCause": zod.object({
+
+}).passthrough().nullish(),
+  "patchPlan": zod.object({
+
+}).passthrough().nullish(),
+  "validationResult": zod.object({
+
+}).passthrough().nullish(),
+  "applicationResult": zod.object({
+
+}).passthrough().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Plan and generate unified diff patch
+ */
+export const GeneratePatchParams = zod.object({
+  "repairId": zod.coerce.string().uuid()
+})
+
+export const GeneratePatchResponse = zod.object({
+  "id": zod.string(),
+  "repairJobId": zod.string(),
+  "attemptNumber": zod.number().int().optional(),
+  "diff": zod.string(),
+  "filesChanged": zod.array(zod.string()),
+  "linesAdded": zod.number().int(),
+  "linesRemoved": zod.number().int(),
+  "rootCause": zod.object({
+
+}).passthrough().nullish(),
+  "patchPlan": zod.object({
+
+}).passthrough().nullish(),
+  "validationResult": zod.object({
+
+}).passthrough().nullish(),
+  "applicationResult": zod.object({
+
+}).passthrough().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Apply validated patch to workspace with backups
+ */
+export const ApplyPatchParams = zod.object({
+  "repairId": zod.coerce.string().uuid()
+})
+
+export const ApplyPatchBody = zod.object({
+  "patchId": zod.string().optional(),
+  "diff": zod.string().optional()
+})
+
+export const ApplyPatchResponse = zod.object({
+  "applied": zod.boolean().optional(),
+  "status": zod.string().optional(),
+  "patch": zod.object({
+  "id": zod.string(),
+  "repairJobId": zod.string(),
+  "attemptNumber": zod.number().int().optional(),
+  "diff": zod.string(),
+  "filesChanged": zod.array(zod.string()),
+  "linesAdded": zod.number().int(),
+  "linesRemoved": zod.number().int(),
+  "rootCause": zod.object({
+
+}).passthrough().nullish(),
+  "patchPlan": zod.object({
+
+}).passthrough().nullish(),
+  "validationResult": zod.object({
+
+}).passthrough().nullish(),
+  "applicationResult": zod.object({
+
+}).passthrough().nullish(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+}).optional()
+})
+
+
+/**
+ * @summary Check Docker sandbox daemon and container status
+ */
+export const GetSandboxHealthResponse = zod.object({
+  "docker_available": zod.boolean(),
+  "runner": zod.string(),
+  "version": zod.string().nullish(),
+  "image": zod.string().optional(),
+  "detail": zod.string().optional()
+})
+
+
+
+export const RepairAttempt = zod.object({
+  "id": zod.string(),
+  "repairJobId": zod.string(),
+  "attemptNumber": zod.number().int(),
+  "status": zod.string(),
+  "failureSummary": zod.string().nullish(),
+  "rootCause": zod.object({}).passthrough().nullish(),
+  "rootCauseConfidence": zod.number().nullish(),
+  "patchId": zod.string().nullish(),
+  "testRunId": zod.string().nullish(),
+  "sandboxRunId": zod.string().nullish(),
+  "startedAt": zod.coerce.date().nullish(),
+  "completedAt": zod.coerce.date().nullish(),
+  "duration": zod.number().nullish(),
+  "rollbackPerformed": zod.boolean().optional(),
+  "verificationResult": zod.object({}).passthrough().nullish(),
+  "patchDiff": zod.string().nullish(),
+  "patchHash": zod.string().nullish(),
+  "error": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+}).passthrough();
+
+export const VerificationResult = zod.object({
+  "status": zod.string(),
+  "exit_code": zod.number().int(),
+  "passed": zod.number().int(),
+  "failed": zod.number().int(),
+  "skipped": zod.number().int().optional(),
+  "total": zod.number().int(),
+  "stdout": zod.string().optional(),
+  "stderr": zod.string().optional(),
+  "duration": zod.number().optional(),
+  "timed_out": zod.boolean().optional(),
+  "regression_detected": zod.boolean().optional(),
+  "failure_signatures": zod.array(zod.object({}).passthrough()).optional()
+}).passthrough();

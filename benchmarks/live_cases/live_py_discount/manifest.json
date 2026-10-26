@@ -1,0 +1,19 @@
+{
+  "id": "live_py_discount",
+  "name": "Live Python Pricing & Discount Boundary Defect",
+  "language": "python",
+  "category": "boundary",
+  "eligible_for_repair": true,
+  "test_command": "pytest tests/test_pricing.py tests/test_regression.py",
+  "test_framework": "pytest",
+  "target_test_file": "tests/test_pricing.py",
+  "independent_test_command": "pytest independent_tests/test_pricing_held_out.py",
+  "independent_test_framework": "pytest",
+  "expected_baseline_status": "FAILED",
+  "files": ["pricing.py"],
+  "protected_test_files": [
+    "tests/test_pricing.py",
+    "tests/test_regression.py"
+  ],
+  "sample_patch": "--- a/pricing.py\n+++ b/pricing.py\n@@ -8,3 +8,3 @@\n         if customer_tier == \"vip\":\n-            rate = 0.05\n+            rate = 0.20\n         elif customer_tier == \"gold\":\n"
+}

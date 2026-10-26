@@ -1,0 +1,15 @@
+{
+  "id": "multi_file_interaction",
+  "name": "Multiple interacting bugs across files",
+  "category": "multi_file",
+  "description": "Tax multiplier in tax.py computes whole integer percentage, distorting invoice calculation in invoice.py.",
+  "expected_behavior": "calculate_invoice_total properly applies percentage as decimal fraction (10% -> 1.10).",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": true,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "PASSED",
+  "golden_patch": "--- a/tax.py\n+++ b/tax.py\n@@ -1,3 +1,3 @@\n def compute_tax_multiplier(rate_percent: float) -> float:\n-    return 1.0 + rate_percent\n+    return 1.0 + (rate_percent / 100.0)\n",
+  "relative_path": "multi_file_interaction"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "all_skipped_tests",
+  "name": "All-skipped tests",
+  "category": "all_skipped_tests",
+  "description": "All tests in the repository are marked skipped. Zero real tests execute.",
+  "expected_behavior": "Verification policy strictly flags SKIPPED_ONLY and refuses to mark VERIFIED.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": false,
+  "expected_baseline_exit_code": 0,
+  "expected_baseline_status": "SKIPPED_ONLY",
+  "expected_post_status": "SKIPPED_ONLY",
+  "relative_path": "all_skipped_tests"
+}

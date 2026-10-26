@@ -21,13 +21,20 @@ import type {
 
 import type {
   ActivityEvent,
+  ApplyPatch200,
+  ApplyPatchBody,
+  BaselineAnalysisResult,
   DashboardSummary,
   GetActivityParams,
+  GetSandboxHealth200,
   HealthStatus,
+  Patch,
   Project,
   ProjectInput,
   RepairInput,
   RepairJob,
+  RootCauseResult,
+  SandboxRun,
   ServicesHealth
 } from './api.schemas';
 
@@ -847,6 +854,622 @@ export function useGetRepair<TData = Awaited<ReturnType<typeof getRepair>>, TErr
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetRepairQueryOptions(repairId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAnalyzeRepairUrl = (repairId: string,) => {
+
+
+
+
+  return `/api/repairs/${repairId}/analyze`
+}
+
+/**
+ * @summary Analyze repository and run baseline tests for a repair job
+ */
+export const analyzeRepair = async (repairId: string, options?: Parameters<typeof customFetch>[1]): Promise<BaselineAnalysisResult> => {
+
+  return customFetch<BaselineAnalysisResult>(getAnalyzeRepairUrl(repairId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getAnalyzeRepairMutationKey = () => ['analyzeRepair'] as const;
+
+export const getAnalyzeRepairMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeRepair>>, TError,AnalyzeRepairMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof analyzeRepair>>, TError,AnalyzeRepairMutationVariables, TContext> => {
+
+const mutationKey = getAnalyzeRepairMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyzeRepair>>, AnalyzeRepairMutationVariables> = (props) => {
+          const {repairId} = props ?? {};
+
+          return  analyzeRepair(repairId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnalyzeRepairMutationResult = NonNullable<Awaited<ReturnType<typeof analyzeRepair>>>
+
+    export type AnalyzeRepairMutationError = ErrorType<void>
+    export type AnalyzeRepairMutationVariables = {repairId: string}
+
+    /**
+ * @summary Analyze repository and run baseline tests for a repair job
+ */
+export const useAnalyzeRepair = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeRepair>>, TError,AnalyzeRepairMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof analyzeRepair>>,
+        TError,
+        AnalyzeRepairMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAnalyzeRepairMutationOptions(options));
+    }
+
+export const getRunInSandboxUrl = (repairId: string,) => {
+
+
+
+
+  return `/api/repairs/${repairId}/sandbox/run`
+}
+
+/**
+ * @summary Execute test suite inside Docker sandbox
+ */
+export const runInSandbox = async (repairId: string, options?: Parameters<typeof customFetch>[1]): Promise<SandboxRun> => {
+
+  return customFetch<SandboxRun>(getRunInSandboxUrl(repairId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRunInSandboxMutationKey = () => ['runInSandbox'] as const;
+
+export const getRunInSandboxMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runInSandbox>>, TError,RunInSandboxMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof runInSandbox>>, TError,RunInSandboxMutationVariables, TContext> => {
+
+const mutationKey = getRunInSandboxMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runInSandbox>>, RunInSandboxMutationVariables> = (props) => {
+          const {repairId} = props ?? {};
+
+          return  runInSandbox(repairId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RunInSandboxMutationResult = NonNullable<Awaited<ReturnType<typeof runInSandbox>>>
+
+    export type RunInSandboxMutationError = ErrorType<void>
+    export type RunInSandboxMutationVariables = {repairId: string}
+
+    /**
+ * @summary Execute test suite inside Docker sandbox
+ */
+export const useRunInSandbox = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runInSandbox>>, TError,RunInSandboxMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof runInSandbox>>,
+        TError,
+        RunInSandboxMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRunInSandboxMutationOptions(options));
+    }
+
+export const getListSandboxRunsUrl = (repairId: string,) => {
+
+
+
+
+  return `/api/repairs/${repairId}/sandbox/runs`
+}
+
+/**
+ * @summary List sandbox execution history for a repair job
+ */
+export const listSandboxRuns = async (repairId: string, options?: Parameters<typeof customFetch>[1]): Promise<SandboxRun[]> => {
+
+  return customFetch<SandboxRun[]>(getListSandboxRunsUrl(repairId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSandboxRunsQueryKey = (repairId: string,) => {
+    return [
+    `/api/repairs/${repairId}/sandbox/runs`
+    ] as const;
+    }
+
+
+export const getListSandboxRunsQueryOptions = <TData = Awaited<ReturnType<typeof listSandboxRuns>>, TError = ErrorType<unknown>>(repairId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSandboxRuns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSandboxRunsQueryKey(repairId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSandboxRuns>>> = ({ signal }) => listSandboxRuns(repairId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: repairId !== null && repairId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSandboxRuns>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSandboxRunsQueryResult = NonNullable<Awaited<ReturnType<typeof listSandboxRuns>>>
+export type ListSandboxRunsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List sandbox execution history for a repair job
+ */
+
+export function useListSandboxRuns<TData = Awaited<ReturnType<typeof listSandboxRuns>>, TError = ErrorType<unknown>>(
+ repairId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSandboxRuns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSandboxRunsQueryOptions(repairId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetRootCauseUrl = (repairId: string,) => {
+
+
+
+
+  return `/api/repairs/${repairId}/root-cause`
+}
+
+/**
+ * @summary Analyze test failures and identify root cause
+ */
+export const getRootCause = async (repairId: string, options?: Parameters<typeof customFetch>[1]): Promise<RootCauseResult> => {
+
+  return customFetch<RootCauseResult>(getGetRootCauseUrl(repairId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRootCauseMutationKey = () => ['getRootCause'] as const;
+
+export const getGetRootCauseMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getRootCause>>, TError,GetRootCauseMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof getRootCause>>, TError,GetRootCauseMutationVariables, TContext> => {
+
+const mutationKey = getGetRootCauseMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getRootCause>>, GetRootCauseMutationVariables> = (props) => {
+          const {repairId} = props ?? {};
+
+          return  getRootCause(repairId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GetRootCauseMutationResult = NonNullable<Awaited<ReturnType<typeof getRootCause>>>
+
+    export type GetRootCauseMutationError = ErrorType<void>
+    export type GetRootCauseMutationVariables = {repairId: string}
+
+    /**
+ * @summary Analyze test failures and identify root cause
+ */
+export const useGetRootCause = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getRootCause>>, TError,GetRootCauseMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof getRootCause>>,
+        TError,
+        GetRootCauseMutationVariables,
+        TContext
+      > => {
+      return useMutation(getGetRootCauseMutationOptions(options));
+    }
+
+export const getGetLatestPatchUrl = (repairId: string,) => {
+
+
+
+
+  return `/api/repairs/${repairId}/patch`
+}
+
+/**
+ * @summary Get latest generated patch for a repair job
+ */
+export const getLatestPatch = async (repairId: string, options?: Parameters<typeof customFetch>[1]): Promise<Patch> => {
+
+  return customFetch<Patch>(getGetLatestPatchUrl(repairId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLatestPatchQueryKey = (repairId: string,) => {
+    return [
+    `/api/repairs/${repairId}/patch`
+    ] as const;
+    }
+
+
+export const getGetLatestPatchQueryOptions = <TData = Awaited<ReturnType<typeof getLatestPatch>>, TError = ErrorType<void>>(repairId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLatestPatch>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLatestPatchQueryKey(repairId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLatestPatch>>> = ({ signal }) => getLatestPatch(repairId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: repairId !== null && repairId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLatestPatch>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLatestPatchQueryResult = NonNullable<Awaited<ReturnType<typeof getLatestPatch>>>
+export type GetLatestPatchQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get latest generated patch for a repair job
+ */
+
+export function useGetLatestPatch<TData = Awaited<ReturnType<typeof getLatestPatch>>, TError = ErrorType<void>>(
+ repairId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLatestPatch>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLatestPatchQueryOptions(repairId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGeneratePatchUrl = (repairId: string,) => {
+
+
+
+
+  return `/api/repairs/${repairId}/patch`
+}
+
+/**
+ * @summary Plan and generate unified diff patch
+ */
+export const generatePatch = async (repairId: string, options?: Parameters<typeof customFetch>[1]): Promise<Patch> => {
+
+  return customFetch<Patch>(getGeneratePatchUrl(repairId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getGeneratePatchMutationKey = () => ['generatePatch'] as const;
+
+export const getGeneratePatchMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generatePatch>>, TError,GeneratePatchMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generatePatch>>, TError,GeneratePatchMutationVariables, TContext> => {
+
+const mutationKey = getGeneratePatchMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generatePatch>>, GeneratePatchMutationVariables> = (props) => {
+          const {repairId} = props ?? {};
+
+          return  generatePatch(repairId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GeneratePatchMutationResult = NonNullable<Awaited<ReturnType<typeof generatePatch>>>
+
+    export type GeneratePatchMutationError = ErrorType<void>
+    export type GeneratePatchMutationVariables = {repairId: string}
+
+    /**
+ * @summary Plan and generate unified diff patch
+ */
+export const useGeneratePatch = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generatePatch>>, TError,GeneratePatchMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generatePatch>>,
+        TError,
+        GeneratePatchMutationVariables,
+        TContext
+      > => {
+      return useMutation(getGeneratePatchMutationOptions(options));
+    }
+
+export const getApplyPatchUrl = (repairId: string,) => {
+
+
+
+
+  return `/api/repairs/${repairId}/apply-patch`
+}
+
+/**
+ * @summary Apply validated patch to workspace with backups
+ */
+export const applyPatch = async (repairId: string,
+    applyPatchBody?: ApplyPatchBody, options?: Parameters<typeof customFetch>[1]): Promise<ApplyPatch200> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ApplyPatch200>(getApplyPatchUrl(repairId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(applyPatchBody)
+  }
+);}
+
+
+
+
+
+export const getApplyPatchMutationKey = () => ['applyPatch'] as const;
+
+export const getApplyPatchMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof applyPatch>>, TError,ApplyPatchMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof applyPatch>>, TError,ApplyPatchMutationVariables, TContext> => {
+
+const mutationKey = getApplyPatchMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof applyPatch>>, ApplyPatchMutationVariables> = (props) => {
+          const {repairId,data} = props ?? {};
+
+          return  applyPatch(repairId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApplyPatchMutationResult = NonNullable<Awaited<ReturnType<typeof applyPatch>>>
+    export type ApplyPatchMutationBody = BodyType<ApplyPatchBody> | undefined
+    export type ApplyPatchMutationError = ErrorType<void>
+    export type ApplyPatchMutationVariables = {repairId: string;data?: BodyType<ApplyPatchBody>}
+
+    /**
+ * @summary Apply validated patch to workspace with backups
+ */
+export const useApplyPatch = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof applyPatch>>, TError,ApplyPatchMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof applyPatch>>,
+        TError,
+        ApplyPatchMutationVariables,
+        TContext
+      > => {
+      return useMutation(getApplyPatchMutationOptions(options));
+    }
+
+export const getGetSandboxHealthUrl = () => {
+
+
+
+
+  return `/api/sandbox/health`
+}
+
+/**
+ * @summary Check Docker sandbox daemon and container status
+ */
+export const getSandboxHealth = async ( options?: Parameters<typeof customFetch>[1]): Promise<GetSandboxHealth200> => {
+
+  return customFetch<GetSandboxHealth200>(getGetSandboxHealthUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSandboxHealthQueryKey = () => {
+    return [
+    `/api/sandbox/health`
+    ] as const;
+    }
+
+
+export const getGetSandboxHealthQueryOptions = <TData = Awaited<ReturnType<typeof getSandboxHealth>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSandboxHealth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSandboxHealthQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSandboxHealth>>> = ({ signal }) => getSandboxHealth({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSandboxHealth>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSandboxHealthQueryResult = NonNullable<Awaited<ReturnType<typeof getSandboxHealth>>>
+export type GetSandboxHealthQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Check Docker sandbox daemon and container status
+ */
+
+export function useGetSandboxHealth<TData = Awaited<ReturnType<typeof getSandboxHealth>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSandboxHealth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSandboxHealthQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -1,0 +1,358 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String               @id @default(uuid())
+  email        String               @unique
+  passwordHash String               @default("") @map("password_hash")
+  name         String               @default("User")
+  isActive     Boolean              @default(true) @map("is_active")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @default(now()) @updatedAt @map("updated_at")
+  memberships  OrganizationMember[]
+  auditLogs    AuditLog[]
+  projects     Project[]            @relation("UserCreatedProjects")
+  repairJobs   RepairJob[]          @relation("UserCreatedRepairs")
+
+  @@map("users")
+}
+
+model Organization {
+  id                 String               @id @default(uuid())
+  name               String
+  slug               String               @unique
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @default(now()) @updatedAt @map("updated_at")
+  members            OrganizationMember[]
+  projects           Project[]
+  repositoryAccesses RepositoryAccess[]
+  approvalPolicies   ApprovalPolicy[]
+  auditLogs          AuditLog[]
+  repairJobs         RepairJob[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  userId         String       @map("user_id")
+  role           String       @default("DEVELOPER") // "ADMIN", "MANAGER", "DEVELOPER", "VIEWER"
+  createdAt      DateTime     @default(now()) @map("created_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("organization_members")
+}
+
+model Project {
+  id                 String             @id @default(uuid())
+  organizationId     String?            @map("organization_id")
+  createdById        String?            @map("created_by_id")
+  name               String
+  repository         String
+  language           String             @default("Python")
+  testFramework      String?            @map("test_framework")
+  status             String             @default("ready")
+  githubOwner        String?            @map("github_owner")
+  githubRepo         String?            @map("github_repo")
+  defaultBranch      String?            @default("main") @map("default_branch")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @default(now()) @updatedAt @map("updated_at")
+  organization       Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy          User?              @relation("UserCreatedProjects", fields: [createdById], references: [id], onDelete: SetNull)
+  repositories       Repository[]
+  repairJobs         RepairJob[]
+  repositoryAccesses RepositoryAccess[]
+
+  @@index([organizationId])
+  @@map("projects")
+}
+
+model RepositoryAccess {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  projectId      String?      @map("project_id")
+  repository     String
+  permission     String       @default("write") // "admin", "write", "read"
+  createdAt      DateTime     @default(now()) @map("created_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project        Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@map("repository_accesses")
+}
+
+model ApprovalPolicy {
+  id                    String       @id @default(uuid())
+  organizationId        String       @map("organization_id")
+  name                  String       @default("Default Approval Policy")
+  requireHumanApproval  Boolean      @default(true) @map("require_human_approval")
+  requireVerifiedRepair Boolean      @default(true) @map("require_verified_repair")
+  allowGitHubPR         Boolean      @default(true) @map("allow_github_pr")
+  allowPush             Boolean      @default(true) @map("allow_push")
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @default(now()) @updatedAt @map("updated_at")
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("approval_policies")
+}
+
+model Repository {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  source    String
+  branch    String   @default("main")
+  createdAt DateTime @default(now()) @map("created_at")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("repositories")
+}
+
+model RepairJob {
+  id                 String              @id @default(uuid())
+  organizationId     String?             @map("organization_id")
+  createdById        String?             @map("created_by_id")
+  projectId          String              @map("project_id")
+  issue              String
+  model              String
+  verificationLevel  String              @map("verification_level")
+  maxIterations      Int                 @map("max_iterations")
+  status             String              @default("queued")
+  iteration          Int                 @default(0)
+  testsPassed        Int                 @default(0) @map("tests_passed")
+  testsTotal         Int                 @default(0) @map("tests_total")
+  testCommand        String?             @map("test_command")
+  language           String?
+  framework          String?
+  testFramework      String?             @map("test_framework")
+  packageManager     String?             @map("package_manager")
+  analysis           String?
+  baselineResult     String?             @map("baseline_result")
+  failures           String?
+  approvedBy         String?             @map("approved_by")
+  approvedAt         DateTime?           @map("approved_at")
+  approvalStatus     String?             @default("NONE") @map("approval_status") // "NONE", "PENDING", "APPROVED", "REJECTED"
+  approvalNotes      String?             @map("approval_notes")
+  confidenceScore    Float?              @map("confidence_score")
+  confidenceLevel    String?             @map("confidence_level")
+  confidenceReasons  String?             @map("confidence_reasons")
+  patchRiskScore     Float?              @map("patch_risk_score")
+  patchRiskLevel     String?             @map("patch_risk_level")
+  patchRiskReasons   String?             @map("patch_risk_reasons")
+  patchQuality       String?             @map("patch_quality")
+  failureCategory    String?             @map("failure_category")
+  repairStrategy     String?             @map("repair_strategy")
+  rootCauseCertainty String?             @map("root_cause_certainty")
+  repairPlan         String?             @map("repair_plan")
+  coverage           Float?
+  idempotencyKey     String?             @map("idempotency_key")
+  retryCount         Int                 @default(0) @map("retry_count")
+  maxRetries         Int                 @default(2) @map("max_retries")
+  interruptedAt      DateTime?           @map("interrupted_at")
+  deliveryStatus     String?             @default("NONE") @map("delivery_status")
+  deliveryError      String?             @map("delivery_error")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
+  organization       Organization?       @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  createdBy          User?               @relation("UserCreatedRepairs", fields: [createdById], references: [id], onDelete: SetNull)
+  project            Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  iterations         AgentIteration[]
+  activityEvents     ActivityEvent[]
+  auditLogs          AuditLog[]
+  sandboxRuns        SandboxRun[]
+  patches            Patch[]
+  attempts           RepairAttempt[]
+  githubIntegrations GitHubIntegration[]
+  repairEvents       RepairEvent[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([approvalStatus])
+  @@index([language])
+  @@index([framework])
+  @@index([failureCategory])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+  @@map("repair_jobs")
+}
+
+model RepairAttempt {
+  id                  String    @id @default(uuid())
+  repairJobId         String    @map("repair_job_id")
+  attemptNumber       Int       @map("attempt_number")
+  status              String    @default("PENDING")
+  failureSummary      String?   @map("failure_summary")
+  rootCause           String?   @map("root_cause")
+  rootCauseConfidence Float?    @map("root_cause_confidence")
+  patchId             String?   @map("patch_id")
+  sandboxRunId        String?   @map("sandbox_run_id")
+  testRunId           String?   @map("test_run_id")
+  verificationResult  String?   @map("verification_result")
+  rollbackPerformed   Boolean   @default(false) @map("rollback_performed")
+  duration            Float?
+  startedAt           DateTime  @default(now()) @map("started_at")
+  completedAt         DateTime? @map("completed_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  repairJob           RepairJob @relation(fields: [repairJobId], references: [id], onDelete: Cascade)
+
+  @@map("repair_attempts")
+}
+
+model Patch {
+  id                String    @id @default(uuid())
+  repairJobId       String    @map("repair_job_id")
+  attemptNumber     Int       @default(1) @map("attempt_number")
+  diff              String
+  filesChanged      String    @map("files_changed")
+  linesAdded        Int       @default(0) @map("lines_added")
+  linesRemoved      Int       @default(0) @map("lines_removed")
+  rootCause         String?   @map("root_cause")
+  patchPlan         String?   @map("patch_plan")
+  validationResult  String?   @map("validation_result")
+  applicationResult String?   @map("application_result")
+  status            String    @default("generated")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  repairJob         RepairJob @relation(fields: [repairJobId], references: [id], onDelete: Cascade)
+
+  @@map("patches")
+}
+
+model SandboxRun {
+  id          String    @id @default(uuid())
+  repairJobId String    @map("repair_job_id")
+  command     String
+  status      String
+  exitCode    Int       @map("exit_code")
+  stdout      String
+  stderr      String
+  duration    Float
+  timedOut    Boolean   @default(false) @map("timed_out")
+  sandboxed   Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  repairJob   RepairJob @relation(fields: [repairJobId], references: [id], onDelete: Cascade)
+
+  @@map("sandbox_runs")
+}
+
+model AgentIteration {
+  id         String    @id @default(uuid())
+  repairId   String    @map("repair_id")
+  attempt    Int
+  state      String
+  hypothesis String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  repairJob  RepairJob @relation(fields: [repairId], references: [id], onDelete: Cascade)
+
+  @@map("agent_iterations")
+}
+
+model ActivityEvent {
+  id        String     @id @default(uuid())
+  repairId  String?    @map("repair_id")
+  event     String
+  status    String
+  message   String
+  createdAt DateTime   @default(now()) @map("created_at")
+  repairJob RepairJob? @relation(fields: [repairId], references: [id], onDelete: SetNull)
+
+  @@map("activity_events")
+}
+
+model AuditLog {
+  id             String        @id @default(uuid())
+  organizationId String?       @map("organization_id")
+  userId         String?       @map("user_id")
+  repairId       String?       @map("repair_id")
+  action         String?
+  event          String        @default("SECURITY_EVENT")
+  resourceType   String?       @map("resource_type")
+  resourceId     String?       @map("resource_id")
+  metadata       String        @default("{}")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  repairJob      RepairJob?    @relation(fields: [repairId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model GitHubIntegration {
+  id                String    @id @default(uuid())
+  repairJobId       String    @map("repair_job_id")
+  provider          String    @default("github")
+  owner             String
+  repository        String
+  defaultBranch     String    @default("main") @map("default_branch")
+  repairBranch      String    @map("repair_branch")
+  commitSha         String?   @map("commit_sha")
+  commitMessage     String?   @map("commit_message")
+  pullRequestNumber Int?      @map("pull_request_number")
+  pullRequestUrl    String?   @map("pull_request_url")
+  status            String    @default("PENDING")
+  error             String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at")
+  repairJob         RepairJob @relation(fields: [repairJobId], references: [id], onDelete: Cascade)
+
+  @@map("github_integrations")
+}
+
+model RepairEvent {
+  id         String    @id @default(uuid())
+  repairId   String    @map("repair_id")
+  eventType  String    @map("event_type")
+  status     String    @default("info")
+  message    String
+  metadata   String?   @default("{}")
+  durationMs Float?    @map("duration_ms")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  repairJob  RepairJob @relation(fields: [repairId], references: [id], onDelete: Cascade)
+
+  @@index([repairId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("repair_events")
+}
+
+model RepairMemory {
+  id                  String   @id @default(uuid())
+  organizationId      String?  @map("organization_id")
+  repairJobId         String?  @map("repair_job_id")
+  language            String
+  framework           String?
+  failureCategory     String   @map("failure_category")
+  errorSignature      String   @map("error_signature")
+  rootCauseCategory   String?  @map("root_cause_category")
+  patchStrategy       String   @map("patch_strategy")
+  verificationOutcome String   @map("verification_outcome") // "VERIFIED", "FAILED", "REGRESSION_DETECTED"
+  attemptCount        Int      @default(1) @map("attempt_count")
+  confidenceScore     Float?   @map("confidence_score")
+  riskScore           Float?   @map("risk_score")
+  summary             String?
+  metadata            String?  @default("{}")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@index([organizationId])
+  @@index([language])
+  @@index([failureCategory])
+  @@index([verificationOutcome])
+  @@index([createdAt])
+  @@map("repair_memories")
+}
+

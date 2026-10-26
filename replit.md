@@ -7,14 +7,14 @@ FixForge is an autonomous software repair platform foundation that records repai
 - `artifacts/fixforge: web` — React/Vite frontend at `/`
 - `artifacts/api-server: API Server` — Node/Express API under `/api`
 - `FixForge AI Agent` — FastAPI internal service on port 8000
-- `pnpm run typecheck` — full TypeScript check
-- `pnpm --filter @workspace/api-server run build` — API bundle check
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas
+- `npm --workspace=@workspace/scripts run typecheck` — full TypeScript check
+- `npm --workspace=@workspace/api-server start` — API server start
+- `npm --workspace=@workspace/api-spec run codegen` — regenerate API hooks and Zod schemas
 - `PYTHONPATH=ai-agent python -m compileall -q ai-agent` — Python syntax check
 
 ## Stack
 
-- pnpm workspace, Node.js 24, TypeScript 5.9
+- npm workspace, Node.js 24, TypeScript 5.9
 - Frontend: React, Vite, Tailwind CSS, Wouter, TanStack React Query
 - API: Express 5, JavaScript/TypeScript source, generated Zod validation
 - Database: SQLite via Node 24 `node:sqlite`, stored at `database/dev.db`
@@ -55,5 +55,5 @@ None recorded.
 
 ## Pointers
 
-- See `.local/skills/pnpm-workspace/SKILL.md` for workspace conventions.
+- See `package.json` for npm workspace conventions.
 - See `README.md` for the Milestone 1 scope.

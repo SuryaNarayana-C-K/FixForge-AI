@@ -2,18 +2,30 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {
-    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
-    "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
-  },
   "private": true,
+  "workspaces": [
+    "artifacts/*",
+    "lib/*",
+    "scripts"
+  ],
+  "scripts": {
+    "build": "npm run --workspaces --if-present build",
+    "dev": "npm --workspace=@workspace/fixforge run dev",
+    "start": "npm --workspace=@workspace/api-server start",
+    "test": "npm --workspace=@workspace/api-server test",
+    "test:backend": "npm --workspace=@workspace/api-server test",
+    "db:generate": "npm --workspace=@workspace/db run db:generate",
+    "db:push": "npm --workspace=@workspace/db run db:push"
+  },
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.3"
   },
   "devDependencies": {
     "prettier": "^3.9.6",
     "typescript": "~5.9.3"
+  },
+  "overrides": {
+    "esbuild": "0.28.2",
+    "js-yaml": "4.3.2"
   }
 }

@@ -5,7 +5,7 @@ router = "application"
 deploymentTarget = "autoscale"
 
 [deployment.postBuild]
-args = ["pnpm", "store", "prune"]
+args = ["npm", "cache", "verify"]
 env = { "CI" = "true" }
 
 [workflows]
@@ -33,7 +33,7 @@ waitForPort = 8000
 outputType = "console"
 
 [agent]
-stack = "PNPM_WORKSPACE"
+stack = "NODEJS"
 expertMode = true
 
 [postMerge]

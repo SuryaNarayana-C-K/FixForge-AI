@@ -1,0 +1,14 @@
+{
+  "id": "missing_tests",
+  "name": "Missing tests",
+  "category": "missing_tests",
+  "description": "Repository contains implementation files but 0 test cases are collected by test runner.",
+  "expected_behavior": "Verification policy strictly flags NO_TESTS_COLLECTED and refuses to mark VERIFIED.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": false,
+  "expected_baseline_exit_code": 5,
+  "expected_baseline_status": "NO_TESTS_COLLECTED",
+  "expected_post_status": "NO_TESTS_COLLECTED",
+  "relative_path": "missing_tests"
+}

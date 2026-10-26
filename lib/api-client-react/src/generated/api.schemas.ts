@@ -100,6 +100,12 @@ export const RepairJobStatus = {
   cancelled: 'cancelled',
 } as const;
 
+export type RepairJobAnalysis = { [key: string]: unknown } | null;
+
+export type RepairJobBaselineResult = { [key: string]: unknown } | null;
+
+export type RepairJobFailuresItem = { [key: string]: unknown };
+
 export interface RepairJob {
   id: string;
   projectId: string;
@@ -111,6 +117,10 @@ export interface RepairJob {
   iteration: number;
   testsPassed: number;
   testsTotal: number;
+  testCommand?: string | null;
+  analysis?: RepairJobAnalysis;
+  baselineResult?: RepairJobBaselineResult;
+  failures?: RepairJobFailuresItem[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -156,11 +166,104 @@ export interface ActivityEvent {
   createdAt: string;
 }
 
+export type BaselineAnalysisResultRepository = {
+  language?: string;
+  testFramework?: string | null;
+  testCommand?: string | null;
+};
+
+export type BaselineAnalysisResultBaseline = {
+  total?: number;
+  passed?: number;
+  failed?: number;
+  skipped?: number;
+  errors?: number;
+  duration?: number;
+};
+
+export type BaselineAnalysisResultFailuresItem = { [key: string]: unknown };
+
+export type BaselineAnalysisResultAnalysis = { [key: string]: unknown };
+
+export interface BaselineAnalysisResult {
+  jobId: string;
+  status: string;
+  repository: BaselineAnalysisResultRepository;
+  baseline: BaselineAnalysisResultBaseline;
+  failures: BaselineAnalysisResultFailuresItem[];
+  analysis?: BaselineAnalysisResultAnalysis;
+}
+
+export interface SandboxRun {
+  id: string;
+  repairJobId: string;
+  command: string;
+  status: string;
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  duration: number;
+  timedOut: boolean;
+  sandboxed: boolean;
+  createdAt: string;
+}
+
+export type PatchRootCause = { [key: string]: unknown } | null;
+
+export type PatchPatchPlan = { [key: string]: unknown } | null;
+
+export type PatchValidationResult = { [key: string]: unknown } | null;
+
+export type PatchApplicationResult = { [key: string]: unknown } | null;
+
+export interface Patch {
+  id: string;
+  repairJobId: string;
+  attemptNumber?: number;
+  diff: string;
+  filesChanged: string[];
+  linesAdded: number;
+  linesRemoved: number;
+  rootCause?: PatchRootCause;
+  patchPlan?: PatchPatchPlan;
+  validationResult?: PatchValidationResult;
+  applicationResult?: PatchApplicationResult;
+  status: string;
+  createdAt: string;
+}
+
+export type RootCauseResultRootCause = { [key: string]: unknown };
+
+export interface RootCauseResult {
+  jobId: string;
+  rootCause: RootCauseResultRootCause;
+  relevantFiles: string[];
+}
+
 export type GetActivityParams = {
 /**
  * @minimum 1
  * @maximum 50
  */
 limit?: number;
+};
+
+export type ApplyPatchBody = {
+  patchId?: string;
+  diff?: string;
+};
+
+export type ApplyPatch200 = {
+  applied?: boolean;
+  status?: string;
+  patch?: Patch;
+};
+
+export type GetSandboxHealth200 = {
+  docker_available: boolean;
+  runner: string;
+  version?: string | null;
+  image?: string;
+  detail?: string;
 };
 

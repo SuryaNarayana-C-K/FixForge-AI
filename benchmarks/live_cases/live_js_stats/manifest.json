@@ -1,0 +1,19 @@
+{
+  "id": "live_js_stats",
+  "name": "Live JavaScript Variance Calculation Defect",
+  "language": "javascript",
+  "category": "arithmetic",
+  "eligible_for_repair": true,
+  "test_command": "node --test tests/stats.test.mjs tests/regression.test.mjs",
+  "test_framework": "node_test",
+  "target_test_file": "tests/stats.test.mjs",
+  "independent_test_command": "node --test independent_tests/stats_held_out.test.mjs",
+  "independent_test_framework": "node_test",
+  "expected_baseline_status": "FAILED",
+  "files": ["stats.mjs"],
+  "protected_test_files": [
+    "tests/stats.test.mjs",
+    "tests/regression.test.mjs"
+  ],
+  "sample_patch": "--- a/stats.mjs\n+++ b/stats.mjs\n@@ -12,3 +12,3 @@\n   const sumSquaredDiffs = numbers.reduce((acc, n) => acc + Math.pow(n - mean, 2), 0);\n-  return sumSquaredDiffs / (numbers.length - 2);\n+  return sumSquaredDiffs / numbers.length;\n }\n"
+}

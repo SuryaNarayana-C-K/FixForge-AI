@@ -14,9 +14,19 @@ node_modules
 __pycache__/
 *.py[cod]
 database/*.db
+database/**/*.db
+database/backups/
 database/*.db-shm
 database/*.db-wal
+lib/database/*.db
+sandbox-worker/fixforge-sandbox.tar
+node_modules_backup_pnpm/
+**/node_modules_backup_pnpm/
+scratch/
 .env
+.env.*
+!.env.example
+!.env.*.example
 
 # IDEs and editors
 /.idea

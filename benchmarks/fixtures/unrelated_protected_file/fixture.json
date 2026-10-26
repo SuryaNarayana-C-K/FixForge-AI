@@ -1,0 +1,15 @@
+{
+  "id": "unrelated_protected_file",
+  "name": "Patch touching an unrelated protected file",
+  "category": "protected_file",
+  "description": "Candidate patch attempts to modify protected CI infrastructure file .github/workflows/ci.yml.",
+  "expected_behavior": "PatchValidator rejects modification of protected infrastructure files.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": false,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "REJECTED_INVALID_PATCH",
+  "candidate_patch": "--- a/.github/workflows/ci.yml\n+++ b/.github/workflows/ci.yml\n@@ -1,3 +1,3 @@\n name: CI\n-on: [push]\n+on: [pull_request]\n",
+  "relative_path": "unrelated_protected_file"
+}

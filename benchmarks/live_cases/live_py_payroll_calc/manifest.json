@@ -1,0 +1,19 @@
+{
+  "id": "live_py_payroll_calc",
+  "name": "Live Python Overtime & Payroll Computation Defect",
+  "language": "python",
+  "category": "arithmetic",
+  "eligible_for_repair": true,
+  "test_command": "pytest tests/test_payroll.py tests/test_regression.py",
+  "test_framework": "pytest",
+  "target_test_file": "tests/test_payroll.py",
+  "independent_test_command": "pytest independent_tests/test_payroll_held_out.py",
+  "independent_test_framework": "pytest",
+  "expected_baseline_status": "FAILED",
+  "files": ["payroll.py"],
+  "protected_test_files": [
+    "tests/test_payroll.py",
+    "tests/test_regression.py"
+  ],
+  "sample_patch": "--- a/payroll.py\n+++ b/payroll.py\n@@ -8,3 +8,3 @@\n     regular_pay = 40.0 * hourly_rate\n-    overtime_pay = overtime_hours * hourly_rate * 1.0\n+    overtime_pay = overtime_hours * hourly_rate * 1.5\n     return round(regular_pay + overtime_pay, 2)\n"
+}

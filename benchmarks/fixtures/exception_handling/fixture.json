@@ -1,0 +1,15 @@
+{
+  "id": "exception_handling",
+  "name": "Exception-handling bug",
+  "category": "exception_handling",
+  "description": "Missing key lookup throws KeyError instead of returning fallback argument.",
+  "expected_behavior": "safe_lookup returns fallback value when key does not exist.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": true,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "PASSED",
+  "golden_patch": "--- a/service.py\n+++ b/service.py\n@@ -1,3 +1,3 @@\n def safe_lookup(mapping: dict, key: str, fallback: str = \"default\") -> str:\n-    return mapping[key]\n+    return mapping.get(key, fallback)\n",
+  "relative_path": "exception_handling"
+}

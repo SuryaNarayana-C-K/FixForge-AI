@@ -1,0 +1,19 @@
+{
+  "id": "live_js_cart_boundary",
+  "name": "Live JavaScript Shopping Cart Boundary Discount Defect",
+  "language": "javascript",
+  "category": "boundary",
+  "eligible_for_repair": true,
+  "test_command": "node --test tests/cart.test.mjs tests/regression.test.mjs",
+  "test_framework": "node_test",
+  "target_test_file": "tests/cart.test.mjs",
+  "independent_test_command": "node --test independent_tests/cart_held_out.test.mjs",
+  "independent_test_framework": "node_test",
+  "expected_baseline_status": "FAILED",
+  "files": ["cart.mjs"],
+  "protected_test_files": [
+    "tests/cart.test.mjs",
+    "tests/regression.test.mjs"
+  ],
+  "sample_patch": "--- a/cart.mjs\n+++ b/cart.mjs\n@@ -11,3 +11,3 @@\n-  if (total > 100) {\n+  if (total >= 100) {\n     discount = total * 0.10;\n"
+}

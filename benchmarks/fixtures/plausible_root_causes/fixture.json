@@ -1,0 +1,42 @@
+{
+  "id": "plausible_root_causes",
+  "name": "Several plausible root causes",
+  "category": "plausible_root_causes",
+  "description": "Empty username passed to normalize_username raises IndexError. Fix could be in caller or callee, but callee is shared across services and directly matches the exception frame.",
+  "expected_behavior": "normalize_username guards against empty string and returns empty string.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": true,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "PASSED",
+  "expected_primary_hypothesis_id": "hyp-1",
+  "golden_patch": "--- a/auth_utils.py\n+++ b/auth_utils.py\n@@ -1,4 +1,6 @@\n def normalize_username(name: str | None) -> str:\n     # BUG: unconditionally indexes name[0] without checking if string is empty\n+    if not name:\n+        return \"\"\n     return name[0].lower() + name[1:]\n",
+  "candidate_hypotheses": [
+    {
+      "hypothesis_id": "hyp-1",
+      "root_cause_statement": "normalize_username lacks empty/None guard before string indexing.",
+      "relevant_files": ["auth_utils.py:3"],
+      "supporting_evidence": ["IndexError: string index out of range in auth_utils.py line 3", "test_empty_username_handled"],
+      "observed_behavior": "Raised IndexError: string index out of range",
+      "expected_behavior": "Return empty string when input is empty",
+      "causal_explanation": "Direct indexing of name[0] when len(name) == 0 raises IndexError.",
+      "confidence_score": 0.90,
+      "missing_evidence_or_assumptions": [],
+      "proposed_repair_strategy": "Add if not name: return '' guard to normalize_username in auth_utils.py"
+    },
+    {
+      "hypothesis_id": "hyp-2",
+      "root_cause_statement": "login_user in auth_service should reject empty username prior to calling normalization.",
+      "relevant_files": ["auth_service.py:5"],
+      "supporting_evidence": ["auth_service.py calls normalize_username"],
+      "observed_behavior": "Calls downstream function without validation",
+      "expected_behavior": "Validate before call",
+      "causal_explanation": "Caller responsibility hypothesis.",
+      "confidence_score": 0.60,
+      "missing_evidence_or_assumptions": ["Does not fix register_user or other callers; does not match exception frame."],
+      "proposed_repair_strategy": "Add check in auth_service.py"
+    }
+  ],
+  "relative_path": "plausible_root_causes"
+}

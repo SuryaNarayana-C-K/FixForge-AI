@@ -1,0 +1,36 @@
+{
+    admin off
+}
+
+{$PILOT_DOMAIN:localhost} {
+    tls {$TLS_MODE:internal}
+
+    # Strict transport security and browser defense headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    # Secure internal reverse proxy to Express API (never exposed publicly)
+    handle /api/* {
+        reverse_proxy fixforge-api:5000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # Secure internal reverse proxy to Vite/React Web Frontend
+    handle {
+        reverse_proxy fixforge-web:80 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+}

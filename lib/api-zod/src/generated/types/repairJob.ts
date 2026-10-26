@@ -5,6 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { RepairJobAnalysis } from './repairJobAnalysis';
+import type { RepairJobBaselineResult } from './repairJobBaselineResult';
+import type { RepairJobFailuresItem } from './repairJobFailuresItem';
 import type { RepairJobStatus } from './repairJobStatus';
 import type { RepairJobVerificationLevel } from './repairJobVerificationLevel';
 
@@ -19,6 +22,10 @@ export interface RepairJob {
   iteration: number;
   testsPassed: number;
   testsTotal: number;
+  testCommand?: string | null;
+  analysis?: RepairJobAnalysis;
+  baselineResult?: RepairJobBaselineResult;
+  failures?: RepairJobFailuresItem[] | null;
   createdAt: Date;
   updatedAt: Date;
 }
