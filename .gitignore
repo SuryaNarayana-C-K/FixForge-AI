@@ -68,3 +68,7 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Private agent and conversation context
+.agents/memory/
+.conversation/attached_assets/
