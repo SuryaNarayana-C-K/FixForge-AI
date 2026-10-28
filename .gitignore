@@ -19,6 +19,11 @@ database/backups/
 database/*.db-shm
 database/*.db-wal
 lib/database/*.db
+lib/db/*.db
+lib/db/**/*.db
+*.db
+*.db-shm
+*.db-wal
 sandbox-worker/fixforge-sandbox.tar
 node_modules_backup_pnpm/
 **/node_modules_backup_pnpm/
@@ -27,6 +32,8 @@ repos/
 examples/testingggg/
 .benchmark_workspaces/
 examples/.candidate_workspaces/
+.agents/
+.conversation/
 .env
 .env.*
 !.env.example
