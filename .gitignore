@@ -23,6 +23,10 @@ sandbox-worker/fixforge-sandbox.tar
 node_modules_backup_pnpm/
 **/node_modules_backup_pnpm/
 scratch/
+repos/
+examples/testingggg/
+.benchmark_workspaces/
+examples/.candidate_workspaces/
 .env
 .env.*
 !.env.example
