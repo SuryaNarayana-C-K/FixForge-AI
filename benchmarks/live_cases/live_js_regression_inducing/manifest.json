@@ -1,0 +1,17 @@
+{
+  "id": "live_js_regression_inducing",
+  "name": "Live JavaScript Patch Inducing Assertion Regression",
+  "language": "javascript",
+  "category": "regression_inducing",
+  "eligible_for_repair": false,
+  "test_command": "node --test tests/calc.test.mjs",
+  "test_framework": "node_test",
+  "target_test_file": "tests/calc.test.mjs",
+  "independent_test_command": null,
+  "expected_baseline_status": "FAILED",
+  "files": ["calc.mjs"],
+  "protected_test_files": [
+    "tests/calc.test.mjs"
+  ],
+  "sample_patch": "--- a/calc.mjs\n+++ b/calc.mjs\n@@ -2,3 +2,3 @@\n export function computeRatio(a, b) {\n-  return (a + 1) / b;\n+  return a === 10 ? 5 : 0;\n }\n"
+}

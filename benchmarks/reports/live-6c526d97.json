@@ -1,0 +1,684 @@
+{
+  "run_id": "live-6c526d97",
+  "timestamp": "2026-10-19T03:14:17.920610+00:00",
+  "code_revision": "m12.5-live",
+  "fixture_version": "1.2.5",
+  "execution_mode": "live_repair",
+  "model": "gemini-2.0-flash",
+  "git_commit": "main-m12.5",
+  "environment": {
+    "os": "windows",
+    "python_version": "3.14",
+    "execution_mode": "live_repair",
+    "model": "gemini-2.0-flash",
+    "git_commit": "main-m12.5"
+  },
+  "metrics": {
+    "total_cases": 6,
+    "completed_cases": 6,
+    "eligible_repair_cases": 3,
+    "eligible_completed_cases": 3,
+    "correct_repairs": 2,
+    "repaired_count": 2,
+    "repair_success_rate": 0.6666666666666666,
+    "failed_repairs": 0,
+    "false_verified_count": 0,
+    "false_verified_rate": 0.0,
+    "regressions_introduced": 1,
+    "regression_cases_count": 1,
+    "regression_rate": 0.3333333333333333,
+    "invalid_patches_accepted": 0,
+    "patch_rejection_rate": null,
+    "unnecessary_files_modified": 1,
+    "diagnosis_cases": 0,
+    "correct_diagnoses": 0,
+    "diagnosis_accuracy": null,
+    "abstention_cases": 1,
+    "correct_abstentions": 1,
+    "abstention_accuracy": 1.0,
+    "abstained_cases_count": 2,
+    "abstention_rate": 0.6666666666666666,
+    "unintended_abstentions": 1,
+    "timeout_cases_count": 0,
+    "timeout_rate": 0.0,
+    "infra_error_cases_count": 0,
+    "infra_error_rate": 0.0,
+    "test_integrity_violations": 0,
+    "invalid_cases_count": 1,
+    "outcome_breakdown": {
+      "ABSTAINED": 2,
+      "REPAIRED": 2,
+      "INVALID_CASE": 1,
+      "REGRESSION": 1
+    },
+    "total_candidates_evaluated": 3,
+    "avg_candidates_per_case": 0.5,
+    "selected_candidates_count": 3,
+    "median_repair_duration_ms": 9412.0,
+    "p95_repair_duration_ms": 40720.25,
+    "avg_model_calls_per_case": 1.1666666666666667,
+    "total_tokens": null,
+    "total_cost_usd": null,
+    "execution_mode": "live_repair",
+    "definitions": {
+      "repair_success_rate": "repaired_cases / eligible_completed_cases (genuine repairable bugs only)",
+      "regression_rate": "cases_with_regressions / cases_where_regression_checks_completed",
+      "abstention_rate": "abstained_cases / eligible_cases",
+      "timeout_rate": "timed_out_cases / eligible_cases",
+      "infra_error_rate": "infra_error_cases / total_cases",
+      "test_integrity_violations": "cases where test files or protected files were modified by repair agent",
+      "false_verified_rate": "false_verified_count / total_cases (must strictly be 0.0)",
+      "candidate_evaluation": "Isolated candidate patch evaluation in disposable workspaces; ranking by test correctness & Occam's razor.",
+      "token_usage_and_cost": "Reported as null when unavailable from runner/provider; never fabricated as zero."
+    }
+  },
+  "case_results": [
+    {
+      "fixture_id": "live_js_stats",
+      "name": "Live JavaScript Variance Calculation Defect",
+      "category": "arithmetic",
+      "eligible_for_repair": true,
+      "status": "ABSTAINED",
+      "is_verified": false,
+      "duration_ms": 12744,
+      "model_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "baseline_exit_code": 1,
+      "baseline_passed": 2,
+      "baseline_failed": 1,
+      "baseline_total": 3,
+      "post_exit_code": null,
+      "post_passed": 0,
+      "post_failed": 0,
+      "post_total": 0,
+      "regression_detected": false,
+      "patch_applied": false,
+      "files_modified": [],
+      "diagnosed_hypothesis": null,
+      "diagnosis_accurate": null,
+      "abstention_selected": true,
+      "ranking_score": null,
+      "error_details": "Agent abstained from applying repair patch.",
+      "reproducible_command": "cd 'C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\\.benchmark_workspaces\\live-6c526d97\\live_js_stats' && node --test tests/stats.test.mjs tests/regression.test.mjs",
+      "candidate_count": 0,
+      "valid_candidate_count": 0,
+      "candidate_rejections": {},
+      "selected_candidate_id": null,
+      "selection_rationale": null,
+      "candidate_evaluation_duration_ms": 0,
+      "candidates": [],
+      "attempts": [],
+      "execution_mode": "live_repair",
+      "independent_tests_passed": null,
+      "test_integrity_violation": false,
+      "test_file_hashes_before": {},
+      "test_file_hashes_after": {},
+      "baseline_precondition_satisfied": true,
+      "infra_error_details": null,
+      "held_out_test_output": null,
+      "regression_details": null,
+      "model_name": "gemini-2.0-flash",
+      "git_commit": null,
+      "bug_id": "live_js_stats",
+      "language": "javascript"
+    },
+    {
+      "fixture_id": "live_py_abstain",
+      "name": "Live Python Contradictory Specification Abstention",
+      "category": "insufficient_evidence",
+      "eligible_for_repair": false,
+      "status": "ABSTAINED",
+      "is_verified": false,
+      "duration_ms": 4352,
+      "model_calls": 0,
+      "token_usage": null,
+      "cost_usd": null,
+      "baseline_exit_code": 1,
+      "baseline_passed": 0,
+      "baseline_failed": 1,
+      "baseline_total": 1,
+      "post_exit_code": null,
+      "post_passed": 0,
+      "post_failed": 0,
+      "post_total": 0,
+      "regression_detected": false,
+      "patch_applied": false,
+      "files_modified": [],
+      "diagnosed_hypothesis": null,
+      "diagnosis_accurate": null,
+      "abstention_selected": true,
+      "ranking_score": null,
+      "error_details": "Agent correctly abstained on ambiguous specification.",
+      "reproducible_command": "cd 'C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\\.benchmark_workspaces\\live-6c526d97\\live_py_abstain' && pytest tests/test_ambiguous.py",
+      "candidate_count": 0,
+      "valid_candidate_count": 0,
+      "candidate_rejections": {},
+      "selected_candidate_id": null,
+      "selection_rationale": null,
+      "candidate_evaluation_duration_ms": 0,
+      "candidates": [],
+      "attempts": [],
+      "execution_mode": "live_repair",
+      "independent_tests_passed": null,
+      "test_integrity_violation": false,
+      "test_file_hashes_before": {},
+      "test_file_hashes_after": {},
+      "baseline_precondition_satisfied": true,
+      "infra_error_details": null,
+      "held_out_test_output": null,
+      "regression_details": null,
+      "model_name": null,
+      "git_commit": null,
+      "bug_id": "live_py_abstain",
+      "language": "python"
+    },
+    {
+      "fixture_id": "live_py_discount",
+      "name": "Live Python Pricing & Discount Boundary Defect",
+      "category": "boundary",
+      "eligible_for_repair": true,
+      "status": "REPAIRED",
+      "is_verified": true,
+      "duration_ms": 43190,
+      "model_calls": 3,
+      "token_usage": null,
+      "cost_usd": null,
+      "baseline_exit_code": 1,
+      "baseline_passed": 3,
+      "baseline_failed": 1,
+      "baseline_total": 4,
+      "post_exit_code": 0,
+      "post_passed": 4,
+      "post_failed": 0,
+      "post_total": 4,
+      "regression_detected": false,
+      "patch_applied": true,
+      "files_modified": [
+        "pricing.py"
+      ],
+      "diagnosed_hypothesis": null,
+      "diagnosis_accurate": null,
+      "abstention_selected": false,
+      "ranking_score": null,
+      "error_details": null,
+      "reproducible_command": "cd 'C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\\.benchmark_workspaces\\live-6c526d97\\live_py_discount' && pytest tests/test_pricing.py tests/test_regression.py",
+      "candidate_count": 1,
+      "valid_candidate_count": 1,
+      "candidate_rejections": {},
+      "selected_candidate_id": "cand-1-1",
+      "selection_rationale": null,
+      "candidate_evaluation_duration_ms": 0,
+      "candidates": [],
+      "attempts": [
+        {
+          "attempt": 1,
+          "attempt_number": 1,
+          "status": "PASSED",
+          "root_cause": {
+            "summary": "Incorrect discount rate for VIP customers in pricing.py causing test failures across standard and held-out test suites.",
+            "failure_type": "assertion_error",
+            "root_cause": "The calculate_discount function incorrectly sets the discount rate for 'vip' customers to 0.05 instead of the required 0.20 as specified in the business logic and test comments.",
+            "observed": "For calculate_discount(50.0, 10, 'vip'), got 450.0 instead of 375.0. For calculate_discount(100.0, 1, 'vip'), got 95.0 instead of 80.0.",
+            "hypothesis": "The developer mistakenly hardcoded 0.05 for VIP customers instead of 0.20.",
+            "evidence": [
+              {
+                "file": "pricing.py",
+                "line": 8,
+                "reason": "Discount rate for VIP customers is set to 0.05 instead of 0.20",
+                "observed_behavior": "rate = 0.05",
+                "expected_behavior": "rate = 0.20",
+                "failing_test": "test_vip_bulk_order_held_out"
+              }
+            ],
+            "confidence": 1.0,
+            "hypotheses": [
+              {
+                "hypothesis_id": "hyp-1",
+                "root_cause_statement": "VIP customer tier discount rate is erroneously set to 0.05 instead of 0.20.",
+                "relevant_files": [
+                  "pricing.py:6-8"
+                ],
+                "supporting_evidence": [
+                  "independent_tests/test_pricing_held_out.py:11",
+                  "tests/test_pricing.py:6"
+                ],
+                "observed_behavior": "calculate_discount(50.0, 10, 'vip') returned 450.0.",
+                "expected_behavior": "calculate_discount(50.0, 10, 'vip') should return 375.0.",
+                "causal_explanation": "A rate of 0.05 for VIP customers combined with a bulk discount of 0.05 yields a total rate of 0.10, resulting in 450.0 instead of the expected 375.0 (rate 0.20 + 0.05 = 0.25).",
+                "confidence_score": 1.0,
+                "missing_evidence_or_assumptions": [],
+                "proposed_repair_strategy": "Change line 8 in pricing.py from 'rate = 0.05' to 'rate = 0.20'.",
+                "rank": 1,
+                "ranking_score": 40.0,
+                "ranking_reasons": [
+                  "Does not explicitly reference observed failing test names (+0.0)",
+                  "All cited files verified to exist in repository (1 files) (+15.0)",
+                  "Grounded expected behavior aligns with test assertions (+10.0)",
+                  "Locally bounded repair scope (1-2 files) satisfies Occam's razor (+10.0)",
+                  "Self-assessed confidence weight (1.00 * 5.0 = +5.0)"
+                ]
+              }
+            ],
+            "primary_hypothesis_id": "hyp-1",
+            "abstention_recommended": false,
+            "abstention_reason": null
+          },
+          "root_cause_confidence": 1.0,
+          "patch_plan": {
+            "objective": "Correct the VIP customer tier discount rate from 0.05 to 0.20 in pricing.py to meet business logic requirements.",
+            "files_to_modify": [
+              "pricing.py"
+            ],
+            "changes": [
+              {
+                "file": "pricing.py",
+                "location": "Line 8",
+                "description": "Change rate = 0.05 to rate = 0.20 for the VIP customer tier."
+              }
+            ],
+            "risks": [
+              "None. This aligns the implementation with the expected business logic and test expectations."
+            ]
+          },
+          "generated_patch": {
+            "files": [
+              "pricing.py"
+            ],
+            "diff": "--- a/pricing.py\n+++ b/pricing.py\n@@ -5,3 +5,3 @@\n     rate = 0.0\n     if customer_tier == \"vip\":\n-        rate = 0.05\n+        rate = 0.20\n     elif customer_tier == \"gold\":",
+            "explanation": "Corrected the VIP customer tier discount rate from 0.05 to 0.20 in pricing.py to meet business logic requirements."
+          },
+          "patch_hash": "68ba67f552078ce3d7d720afa8407abb8ab2e0f72097561f9434b224227f18aa",
+          "validation": {
+            "valid": true,
+            "status": "VALID",
+            "errors": [],
+            "warnings": [],
+            "files_to_modify": [
+              "pricing.py"
+            ],
+            "lines_added": 1,
+            "lines_removed": 1
+          },
+          "application": {
+            "applied": true,
+            "status": "APPLIED",
+            "error": null,
+            "files_modified": [
+              "pricing.py"
+            ],
+            "git_diff_before": "",
+            "git_diff_after": "",
+            "backup_id": "backup-a113d6b5",
+            "timestamp": "2026-10-19T03:13:21.406213+00:00"
+          },
+          "verification": {
+            "status": "PASSED",
+            "exit_code": 0,
+            "passed": 7,
+            "failed": 0,
+            "skipped": 0,
+            "total": 7,
+            "stdout": "============================= test session starts =============================\r\nplatform win32 -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0\r\nrootdir: C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\r\nconfigfile: pyproject.toml\r\nplugins: anyio-4.14.2, langsmith-0.14.1\r\ncollected 7 items\r\n\r\nindependent_tests\\test_pricing_held_out.py ...                           [ 42%]\r\ntests\\test_pricing.py ..                                                 [ 71%]\r\ntests\\test_regression.py ..                                              [100%]\r\n\r\n============================== 7 passed in 0.12s ==============================\r\n",
+            "stderr": "",
+            "duration": 5.15,
+            "timed_out": false,
+            "regression_detected": false,
+            "failure_signatures": [],
+            "new_failures": [],
+            "resolved_failures": [
+              {
+                "test_name": "test_vip_bulk_order_held_out",
+                "file": "independent_tests/test_pricing_held_out.py",
+                "error_type": "AssertionError",
+                "message": "Independent VIP bulk test failed: expected 375.0, got 450.0",
+                "traceback": "def test_vip_bulk_order_held_out():\r\n        # 50.0 * 10 = 500 subtotal, VIP rate 0.20 + bulk 0.05 = 0.25 -> 500 * 0.75 = 375.0\r\n        result = calculate_discount(50.0, 10, \"vip\")\r\n>       assert result == 375.0, f\"Independent VIP bulk test failed: expected 375.0, got {result}\"\r\nE       AssertionError: Independent VIP bulk test failed: expected 375.0, got 450.0\r\nE       assert 450.0 == 375.0\r\n\r\nindependent_tests\\test_pricing_held_out.py:11: AssertionError",
+                "source_reference": "independent_tests/test_pricing_held_out.py:11"
+              },
+              {
+                "test_name": "test_vip_single_item",
+                "file": "tests/test_pricing.py",
+                "error_type": "AssertionError",
+                "message": "Expected 80.0 for VIP discount, got 95.0",
+                "traceback": "def test_vip_single_item():\r\n        # VIP should receive 20% discount on single item: 100 * 0.80 = 80.0\r\n        result = calculate_discount(100.0, 1, \"vip\")\r\n>       assert result == 80.0, f\"Expected 80.0 for VIP discount, got {result}\"\r\nE       AssertionError: Expected 80.0 for VIP discount, got 95.0\r\nE       assert 95.0 == 80.0\r\n\r\ntests\\test_pricing.py:6: AssertionError",
+                "source_reference": "tests/test_pricing.py:6"
+              }
+            ]
+          },
+          "rollback_performed": false,
+          "duration": 5.15,
+          "timestamp": "2026-10-19T03:13:28.186812+00:00"
+        }
+      ],
+      "execution_mode": "live_repair",
+      "independent_tests_passed": true,
+      "test_integrity_violation": false,
+      "test_file_hashes_before": {
+        "tests/test_pricing.py": "931907ec50aa6a2288181c0bc872ce5b6b06c1991f166987eb65bbf628e1c1c2",
+        "tests/test_regression.py": "5ecba8c14f27b622f46d1b4b59dc94e9d3f11bba82524a8f3417c3b938448ace"
+      },
+      "test_file_hashes_after": {
+        "tests/test_pricing.py": "931907ec50aa6a2288181c0bc872ce5b6b06c1991f166987eb65bbf628e1c1c2",
+        "tests/test_regression.py": "5ecba8c14f27b622f46d1b4b59dc94e9d3f11bba82524a8f3417c3b938448ace"
+      },
+      "baseline_precondition_satisfied": true,
+      "infra_error_details": null,
+      "held_out_test_output": "============================= test session starts =============================\r\nplatform win32 -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0\r\nrootdir: C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\r\nconfigfile: pyproject.toml\r\nplugins: anyio-4.14.2, langsmith-0.14.1\r\ncollected 3 items\r\n\r\nindependent_tests\\test_pricing_held_out.py ...                           [100%]\r\n\r\n============================== 3 passed in 0.05s ==============================\r\n\n",
+      "regression_details": null,
+      "model_name": "gemini-2.0-flash",
+      "git_commit": null,
+      "bug_id": "live_py_discount",
+      "language": "python"
+    },
+    {
+      "fixture_id": "live_py_precondition_invalid",
+      "name": "Live Python Baseline Precondition Violation (Already Passing)",
+      "category": "invalid_case",
+      "eligible_for_repair": false,
+      "status": "INVALID_CASE",
+      "is_verified": false,
+      "duration_ms": 2985,
+      "model_calls": 0,
+      "token_usage": null,
+      "cost_usd": null,
+      "baseline_exit_code": 0,
+      "baseline_passed": 1,
+      "baseline_failed": 0,
+      "baseline_total": 1,
+      "post_exit_code": null,
+      "post_passed": 0,
+      "post_failed": 0,
+      "post_total": 0,
+      "regression_detected": false,
+      "patch_applied": false,
+      "files_modified": [],
+      "diagnosed_hypothesis": null,
+      "diagnosis_accurate": null,
+      "abstention_selected": false,
+      "ranking_score": null,
+      "error_details": "Baseline test suite passed unexpectedly; precondition violated.",
+      "reproducible_command": "cd 'C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\\.benchmark_workspaces\\live-6c526d97\\live_py_precondition_invalid' && pytest tests/test_pass.py",
+      "candidate_count": 0,
+      "valid_candidate_count": 0,
+      "candidate_rejections": {},
+      "selected_candidate_id": null,
+      "selection_rationale": null,
+      "candidate_evaluation_duration_ms": 0,
+      "candidates": [],
+      "attempts": [],
+      "execution_mode": "live_repair",
+      "independent_tests_passed": null,
+      "test_integrity_violation": false,
+      "test_file_hashes_before": {},
+      "test_file_hashes_after": {},
+      "baseline_precondition_satisfied": false,
+      "infra_error_details": null,
+      "held_out_test_output": null,
+      "regression_details": null,
+      "model_name": null,
+      "git_commit": null,
+      "bug_id": "live_py_precondition_invalid",
+      "language": "python"
+    },
+    {
+      "fixture_id": "live_py_regression_inducing",
+      "name": "Live Python Patch Inducing Assertion Regression",
+      "category": "regression_inducing",
+      "eligible_for_repair": false,
+      "status": "REGRESSION",
+      "is_verified": false,
+      "duration_ms": 6080,
+      "model_calls": 0,
+      "token_usage": null,
+      "cost_usd": null,
+      "baseline_exit_code": 1,
+      "baseline_passed": 1,
+      "baseline_failed": 1,
+      "baseline_total": 2,
+      "post_exit_code": 1,
+      "post_passed": 0,
+      "post_failed": 2,
+      "post_total": 2,
+      "regression_detected": true,
+      "patch_applied": true,
+      "files_modified": [
+        "calc.py"
+      ],
+      "diagnosed_hypothesis": null,
+      "diagnosis_accurate": null,
+      "abstention_selected": false,
+      "ranking_score": null,
+      "error_details": "Patch introduced regressions: Regression detected: 1 new test failure(s) introduced.",
+      "reproducible_command": "cd 'C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\\.benchmark_workspaces\\live-6c526d97\\live_py_regression_inducing' && pytest tests/test_calc.py",
+      "candidate_count": 1,
+      "valid_candidate_count": 0,
+      "candidate_rejections": {},
+      "selected_candidate_id": "cand-regression-eval-1",
+      "selection_rationale": "Candidate patch evaluated for assertion regression detection.",
+      "candidate_evaluation_duration_ms": 0,
+      "candidates": [],
+      "attempts": [],
+      "execution_mode": "live_repair",
+      "independent_tests_passed": null,
+      "test_integrity_violation": false,
+      "test_file_hashes_before": {
+        "tests/test_calc.py": "33575e6f3a32f9906f8a7a23a97441706e384dd60f34f5bd6f332503c360147e"
+      },
+      "test_file_hashes_after": {
+        "tests/test_calc.py": "33575e6f3a32f9906f8a7a23a97441706e384dd60f34f5bd6f332503c360147e"
+      },
+      "baseline_precondition_satisfied": true,
+      "infra_error_details": null,
+      "held_out_test_output": null,
+      "regression_details": "Regression detected: Regression detected: 1 new test failure(s) introduced.",
+      "model_name": "gemini-2.0-flash",
+      "git_commit": null,
+      "bug_id": "live_py_regression_inducing",
+      "language": "python"
+    },
+    {
+      "fixture_id": "live_py_user_service",
+      "name": "Live Python User Profile Parsing Defect",
+      "category": "exception",
+      "eligible_for_repair": true,
+      "status": "REPAIRED",
+      "is_verified": true,
+      "duration_ms": 33311,
+      "model_calls": 3,
+      "token_usage": null,
+      "cost_usd": null,
+      "baseline_exit_code": 1,
+      "baseline_passed": 1,
+      "baseline_failed": 2,
+      "baseline_total": 3,
+      "post_exit_code": 0,
+      "post_passed": 3,
+      "post_failed": 0,
+      "post_total": 3,
+      "regression_detected": false,
+      "patch_applied": true,
+      "files_modified": [
+        "user_service.py"
+      ],
+      "diagnosed_hypothesis": null,
+      "diagnosis_accurate": null,
+      "abstention_selected": false,
+      "ranking_score": null,
+      "error_details": null,
+      "reproducible_command": "cd 'C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\\.benchmark_workspaces\\live-6c526d97\\live_py_user_service' && pytest tests/test_user.py tests/test_regression.py",
+      "candidate_count": 1,
+      "valid_candidate_count": 1,
+      "candidate_rejections": {},
+      "selected_candidate_id": "cand-1-1",
+      "selection_rationale": null,
+      "candidate_evaluation_duration_ms": 0,
+      "candidates": [],
+      "attempts": [
+        {
+          "attempt": 1,
+          "attempt_number": 1,
+          "status": "PASSED",
+          "root_cause": {
+            "summary": "parse_user_profile raises KeyError when 'middle_name' is missing from the input dictionary due to direct dictionary indexing.",
+            "failure_type": "KeyError",
+            "root_cause": "In user_service.py at line 4, the code attempts to directly access data['middle_name'] and call .strip() on it without checking if 'middle_name' is a key in the dictionary. When input dictionaries omit 'middle_name', Python raises a KeyError.",
+            "observed": "Calling parse_user_profile with user data dictionaries lacking a 'middle_name' key results in a KeyError: 'middle_name'.",
+            "hypothesis": "The function should use dict.get('middle_name', '') instead of direct indexing data['middle_name'] to safely handle absent keys.",
+            "evidence": [
+              {
+                "file": "user_service.py",
+                "line": 4,
+                "reason": "Direct indexing with data['middle_name'] causes a KeyError when the key is absent.",
+                "observed_behavior": "Raises KeyError: 'middle_name'",
+                "expected_behavior": "Gracefully handle missing 'middle_name' by defaulting to an empty string.",
+                "failing_test": "test_profile_without_middle_name"
+              }
+            ],
+            "confidence": 1.0,
+            "hypotheses": [
+              {
+                "hypothesis_id": "hyp-1",
+                "root_cause_statement": "Direct indexing of 'middle_name' on dictionaries lacking this key leads to KeyError.",
+                "relevant_files": [
+                  "user_service.py:4"
+                ],
+                "supporting_evidence": [
+                  "KeyError: 'middle_name' at user_service.py:4 across multiple failing tests."
+                ],
+                "observed_behavior": "KeyError is raised when 'middle_name' is missing from input dict.",
+                "expected_behavior": "Function should safely retrieve 'middle_name' using .get() with a default empty string or None.",
+                "causal_explanation": "Direct lookup data['middle_name'] assumes the key always exists, which violates input assumptions of tests where middle name is optional.",
+                "confidence_score": 1.0,
+                "missing_evidence_or_assumptions": [],
+                "proposed_repair_strategy": "Change line 4 in user_service.py to use data.get(\"middle_name\") or data.get(\"middle_name\", \"\") instead of direct bracket indexing.",
+                "rank": 1,
+                "ranking_score": 40.0,
+                "ranking_reasons": [
+                  "Does not explicitly reference observed failing test names (+0.0)",
+                  "All cited files verified to exist in repository (1 files) (+15.0)",
+                  "Grounded expected behavior aligns with test assertions (+10.0)",
+                  "Locally bounded repair scope (1-2 files) satisfies Occam's razor (+10.0)",
+                  "Self-assessed confidence weight (1.00 * 5.0 = +5.0)"
+                ]
+              }
+            ],
+            "primary_hypothesis_id": "hyp-1",
+            "abstention_recommended": false,
+            "abstention_reason": null
+          },
+          "root_cause_confidence": 1.0,
+          "patch_plan": {
+            "objective": "Prevent KeyError by safely retrieving middle_name using dict.get instead of direct indexing in user_service.py",
+            "files_to_modify": [
+              "user_service.py"
+            ],
+            "changes": [
+              {
+                "file": "user_service.py",
+                "location": "line 4",
+                "description": "Replace direct dictionary lookup data['middle_name'] with data.get('middle_name', '') to safely handle missing keys."
+              }
+            ],
+            "risks": [
+              "None identified as this maintains full backward compatibility for inputs containing middle_name and correctly handles absent middle_name."
+            ]
+          },
+          "generated_patch": {
+            "files": [
+              "user_service.py"
+            ],
+            "diff": "--- a/user_service.py\n+++ b/user_service.py\n@@ -4,1 +4,1 @@\n-    middle = data[\"middle_name\"].strip() if data[\"middle_name\"] else \"\"\n+    middle = data.get(\"middle_name\", \"\").strip() if data.get(\"middle_name\") else \"\"",
+            "explanation": "Replace direct dictionary lookup data['middle_name'] with data.get('middle_name', '') to safely handle missing keys and avoid KeyError."
+          },
+          "patch_hash": "0f4c3f1b227906eda540f841edc7ff0374a67a73e82689461c48fc3506ce411c",
+          "validation": {
+            "valid": true,
+            "status": "VALID",
+            "errors": [],
+            "warnings": [],
+            "files_to_modify": [
+              "user_service.py"
+            ],
+            "lines_added": 1,
+            "lines_removed": 1
+          },
+          "application": {
+            "applied": true,
+            "status": "APPLIED",
+            "error": null,
+            "files_modified": [
+              "user_service.py"
+            ],
+            "git_diff_before": "",
+            "git_diff_after": "",
+            "backup_id": "backup-47b9ed41",
+            "timestamp": "2026-10-19T03:14:09.054669+00:00"
+          },
+          "verification": {
+            "status": "PASSED",
+            "exit_code": 0,
+            "passed": 5,
+            "failed": 0,
+            "skipped": 0,
+            "total": 5,
+            "stdout": "============================= test session starts =============================\r\nplatform win32 -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0\r\nrootdir: C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\r\nconfigfile: pyproject.toml\r\nplugins: anyio-4.14.2, langsmith-0.14.1\r\ncollected 5 items\r\n\r\nindependent_tests\\test_user_held_out.py ..                               [ 40%]\r\ntests\\test_regression.py ..                                              [ 80%]\r\ntests\\test_user.py .                                                     [100%]\r\n\r\n============================== 5 passed in 0.11s ==============================\r\n",
+            "stderr": "",
+            "duration": 2.78,
+            "timed_out": false,
+            "regression_detected": false,
+            "failure_signatures": [],
+            "new_failures": [],
+            "resolved_failures": [
+              {
+                "test_name": "test_minor_age_held_out",
+                "file": "independent_tests/test_user_held_out.py",
+                "error_type": "KeyError",
+                "message": "'middle_name'",
+                "traceback": "def test_minor_age_held_out():\r\n        data = {\"id\": \"usr-998\", \"first_name\": \"Tim\", \"last_name\": \"Drake\", \"age\": 16}\r\n>       profile = parse_user_profile(data)\r\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\r\n\r\nindependent_tests\\test_user_held_out.py:13: \r\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\r\n\r\ndata = {'id': 'usr-998', 'first_name': 'Tim', 'last_name': 'Drake', 'age': 16}\r\n\r\n    def parse_user_profile(data: dict) -> dict:\r\n        # BUG: direct indexing data[\"middle_name\"] causes KeyError when key is absent\r\n        first = data[\"first_name\"].strip()\r\n>       middle = data[\"middle_name\"].strip() if data[\"middle_name\"] else \"\"\r\n                                                ^^^^^^^^^^^^^^^^^^^\r\nE       KeyError: 'middle_name'\r\n\r\nuser_service.py:4: KeyError",
+                "source_reference": "independent_tests/test_user_held_out.py:13"
+              },
+              {
+                "test_name": "test_negative_age_raises",
+                "file": "tests/test_regression.py",
+                "error_type": "KeyError",
+                "message": "'middle_name'",
+                "traceback": "def test_negative_age_raises():\r\n        with pytest.raises(ValueError, match=\"Age cannot be negative\"):\r\n>           parse_user_profile({\"id\": \"usr-103\", \"first_name\": \"C\", \"last_name\": \"D\", \"age\": -5})\r\n\r\ntests\\test_regression.py:17: \r\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\r\n\r\ndata = {'id': 'usr-103', 'first_name': 'C', 'last_name': 'D', 'age': -5}\r\n\r\n    def parse_user_profile(data: dict) -> dict:\r\n        # BUG: direct indexing data[\"middle_name\"] causes KeyError when key is absent\r\n        first = data[\"first_name\"].strip()\r\n>       middle = data[\"middle_name\"].strip() if data[\"middle_name\"] else \"\"\r\n                                                ^^^^^^^^^^^^^^^^^^^\r\nE       KeyError: 'middle_name'\r\n\r\nuser_service.py:4: KeyError",
+                "source_reference": "tests/test_regression.py:17"
+              },
+              {
+                "test_name": "test_profile_without_middle_name",
+                "file": "tests/test_user.py",
+                "error_type": "KeyError",
+                "message": "'middle_name'",
+                "traceback": "def test_profile_without_middle_name():\r\n        data = {\r\n            \"id\": \"usr-101\",\r\n            \"first_name\": \"Alice\",\r\n            \"last_name\": \"Smith\",\r\n            \"age\": 25,\r\n        }\r\n>       profile = parse_user_profile(data)\r\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\r\n\r\ntests\\test_user.py:10: \r\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\r\n\r\ndata = {'id': 'usr-101', 'first_name': 'Alice', 'last_name': 'Smith', 'age': 25}\r\n\r\n    def parse_user_profile(data: dict) -> dict:\r\n        # BUG: direct indexing data[\"middle_name\"] causes KeyError when key is absent\r\n        first = data[\"first_name\"].strip()\r\n>       middle = data[\"middle_name\"].strip() if data[\"middle_name\"] else \"\"\r\n                                                ^^^^^^^^^^^^^^^^^^^\r\nE       KeyError: 'middle_name'\r\n\r\nuser_service.py:4: KeyError",
+                "source_reference": "tests/test_user.py:10"
+              }
+            ]
+          },
+          "rollback_performed": false,
+          "duration": 2.78,
+          "timestamp": "2026-10-19T03:14:12.167673+00:00"
+        }
+      ],
+      "execution_mode": "live_repair",
+      "independent_tests_passed": true,
+      "test_integrity_violation": false,
+      "test_file_hashes_before": {
+        "tests/test_user.py": "6cb48ae151fd8115d69e7350350908f8a2932d3f967e94bb1e101945bb94b5a6",
+        "tests/test_regression.py": "3317da299b1674bfc7af91b3ae68942f8822a073fb7fddb87945a528dda11491"
+      },
+      "test_file_hashes_after": {
+        "tests/test_user.py": "6cb48ae151fd8115d69e7350350908f8a2932d3f967e94bb1e101945bb94b5a6",
+        "tests/test_regression.py": "3317da299b1674bfc7af91b3ae68942f8822a073fb7fddb87945a528dda11491"
+      },
+      "baseline_precondition_satisfied": true,
+      "infra_error_details": null,
+      "held_out_test_output": "============================= test session starts =============================\r\nplatform win32 -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0\r\nrootdir: C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\r\nconfigfile: pyproject.toml\r\nplugins: anyio-4.14.2, langsmith-0.14.1\r\ncollected 2 items\r\n\r\nindependent_tests\\test_user_held_out.py ..                               [100%]\r\n\r\n============================== 2 passed in 0.08s ==============================\r\n\n",
+      "regression_details": null,
+      "model_name": "gemini-2.0-flash",
+      "git_commit": null,
+      "bug_id": "live_py_user_service",
+      "language": "python"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "boundary_condition",
+  "name": "Boundary-condition bug",
+  "category": "boundary_condition",
+  "description": "Incorrect comparison index > len(items) allows IndexError when index == len(items).",
+  "expected_behavior": "get_page_item returns None when index >= len(items).",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": true,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "PASSED",
+  "golden_patch": "--- a/catalog.py\n+++ b/catalog.py\n@@ -1,5 +1,5 @@\n def get_page_item(items: list, index: int):\n     # BUG: off-by-one boundary check (index > len(items) allows IndexError)\n-    if index > len(items):\n+    if index >= len(items):\n         return None\n     return items[index]\n",
+  "relative_path": "boundary_condition"
+}

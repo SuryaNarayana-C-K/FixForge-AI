@@ -1,0 +1,2307 @@
+# FIXFORGE — COMPLETE MASTER BUILD PROMPT
+
+## PROJECT NAME
+
+# FixForge
+
+### Autonomous AI Software Repair & Self-Correction Platform
+
+---
+
+# 1. ROLE
+
+Act as a senior:
+
+* AI Engineer
+* Agentic AI Engineer
+* Full-Stack Developer
+* Node.js/Express Engineer
+* React Engineer
+* Python Engineer
+* DevOps Engineer
+* Docker/Sandbox Security Engineer
+* Software Testing Engineer
+* System Architect
+
+Build a serious, production-quality portfolio project called:
+
+# FixForge
+
+FixForge is an autonomous AI software debugging and repair platform.
+
+It should be capable of:
+
+```text
+Repository
+    ↓
+Understand
+    ↓
+Detect Failure
+    ↓
+Analyze Root Cause
+    ↓
+Create Repair Plan
+    ↓
+Generate Patch
+    ↓
+Apply Patch
+    ↓
+Execute in Sandbox
+    ↓
+Run Tests
+    ↓
+Observe Result
+    ↓
+Self-Correct
+    ↓
+Retest
+    ↓
+Verify
+    ↓
+Generate Final Report
+```
+
+The project must NOT be a simple chatbot.
+
+The central feature is:
+
+# Autonomous test-driven self-correction.
+
+---
+
+# 2. IMPORTANT TECHNOLOGY STACK
+
+Use exactly this architecture.
+
+## FRONTEND
+
+Use:
+
+* React
+* JavaScript
+* Vite
+* Tailwind CSS
+* React Router
+* Axios
+* WebSocket
+* Monaco Editor if practical
+
+Do NOT use TypeScript for the frontend.
+
+Frontend directory:
+
+frontend/
+
+---
+
+# 3. BACKEND
+
+Use:
+
+* Node.js
+* Express.js
+* JavaScript
+* REST APIs
+* WebSocket support
+
+Backend directory:
+
+backend/
+
+Do NOT use Python for the main application API.
+
+Node.js + Express is responsible for:
+
+* authentication
+* projects
+* repositories
+* repair jobs
+* database operations
+* API endpoints
+* GitHub integration
+* frontend communication
+* WebSocket events
+* job management
+
+---
+
+# 4. DATABASE
+
+Use:
+
+# SQLite
+
+Do NOT use MongoDB.
+
+Use a clean ORM such as:
+
+* Prisma
+
+or another well-maintained SQLite-compatible ORM.
+
+Prefer Prisma if it fits the architecture.
+
+Database:
+
+SQLite
+
+Example:
+
+database/dev.db
+
+Use migrations.
+
+Database should store:
+
+* users
+* projects
+* repositories
+* repair jobs
+* agent iterations
+* tool calls
+* patches
+* test runs
+* sandbox runs
+* repair reports
+* audit logs
+
+---
+
+# 5. AI / AGENT SERVICE
+
+Use Python only for the AI/agent engine.
+
+Directory:
+
+ai-agent/
+
+Use:
+
+* Python 3.12+
+* LangGraph
+* Pydantic
+* FastAPI only for the internal AI service
+* LLM provider abstraction
+* Python AST tools
+* pytest integration
+* Git tools
+* Docker integration
+
+The AI service is separate from the Node.js application backend.
+
+Architecture:
+
+```text
+React
+  ↓
+Node.js + Express
+  ↓
+SQLite
+  ↓
+Python AI Agent Service
+  ↓
+LangGraph
+  ↓
+LLM
+  ↓
+Developer Tools
+  ↓
+Docker Sandbox
+```
+
+---
+
+# 6. MODEL-AGNOSTIC DESIGN
+
+Do NOT hard-code the application to one AI provider.
+
+Create an LLM provider abstraction.
+
+Support the architecture for:
+
+* OpenAI-compatible APIs
+* Anthropic
+* Google Gemini
+* NVIDIA NIM
+* Ollama
+* other providers later
+
+Environment variables:
+
+LLM_PROVIDER=
+
+LLM_MODEL=
+
+LLM_API_KEY=
+
+The rest of the agent should not care which provider is being used.
+
+Example:
+
+```text
+LLM Provider Interface
+        ↓
+ ┌──────┼─────────┐
+ ↓      ↓         ↓
+OpenAI  Gemini    Anthropic
+ ↓      ↓         ↓
+       Agent
+```
+
+---
+
+# 7. CORE PROBLEM
+
+Developers spend significant time debugging:
+
+* syntax errors
+* runtime errors
+* failed tests
+* incorrect logic
+* dependency issues
+* regression failures
+* CI failures
+
+Existing coding assistants can suggest or generate fixes.
+
+However, FixForge focuses on the complete autonomous loop:
+
+```text
+Generate Fix
+      ↓
+Actually Execute It
+      ↓
+Actually Test It
+      ↓
+Observe Failure
+      ↓
+Understand Failure
+      ↓
+Correct Previous Fix
+      ↓
+Test Again
+      ↓
+Verify
+```
+
+Never declare a repair successful simply because an LLM generated code.
+
+---
+
+# 8. MAIN USER EXPERIENCE
+
+A user should be able to:
+
+1. Create a project.
+2. Upload or connect a repository.
+3. Enter a bug/issue/error.
+4. Select verification level.
+5. Select AI model.
+6. Start repair.
+7. Watch the agent work live.
+8. See tests execute.
+9. See corrections happen.
+10. See the final code diff.
+11. See verification results.
+12. Download/view the repair report.
+13. Optionally create a GitHub branch/PR.
+
+---
+
+# 9. CORE AGENT LOOP
+
+Implement the following exact logical workflow:
+
+```text
+INITIALIZE
+    ↓
+REPOSITORY_ANALYSIS
+    ↓
+BASELINE_TEST
+    ↓
+FAILURE_DETECTION
+    ↓
+ROOT_CAUSE_ANALYSIS
+    ↓
+REPAIR_PLANNING
+    ↓
+PATCH_GENERATION
+    ↓
+PATCH_VALIDATION
+    ↓
+PATCH_APPLICATION
+    ↓
+SANDBOX_EXECUTION
+    ↓
+TESTING
+    ↓
+OBSERVATION
+    ↓
+    ┌────────────────────┐
+    │ Tests passed?       │
+    └─────────┬──────────┘
+              │
+        YES   │   NO
+         ↓    │    ↓
+     VERIFY   │  FAILURE_ANALYSIS
+         ↓    │       ↓
+      SUCCESS │  SELF_CORRECTION
+              │       ↓
+              │  NEW PATCH
+              │       ↓
+              └── RETRY
+```
+
+Default maximum attempts:
+
+5
+
+Make configurable.
+
+---
+
+# 10. AGENT STATES
+
+Implement explicit states:
+
+INIT
+
+REPOSITORY_ANALYSIS
+
+BASELINE_TESTING
+
+FAILURE_DETECTION
+
+ROOT_CAUSE_ANALYSIS
+
+REPAIR_PLANNING
+
+PATCH_GENERATION
+
+PATCH_VALIDATION
+
+PATCH_APPLICATION
+
+SANDBOX_EXECUTION
+
+TESTING
+
+FAILURE_ANALYSIS
+
+SELF_CORRECTION
+
+VERIFICATION
+
+COMPLETED
+
+FAILED
+
+TIMEOUT
+
+CANCELLED
+
+---
+
+# 11. AGENT TOOLS
+
+The AI agent must have tools.
+
+Minimum tools:
+
+## Repository
+
+read_file(path)
+
+write_file(path, content)
+
+list_files(path)
+
+search_code(query)
+
+get_project_structure()
+
+get_file_metadata(path)
+
+## Git
+
+git_status()
+
+git_diff()
+
+git_log()
+
+git_create_branch()
+
+git_commit()
+
+## Execution
+
+run_command(command)
+
+run_tests()
+
+run_linter()
+
+run_build()
+
+## Analysis
+
+detect_language()
+
+detect_framework()
+
+detect_test_framework()
+
+get_stack_trace()
+
+get_test_failure()
+
+All tools must be sandbox-aware.
+
+---
+
+# 12. TOOL SECURITY
+
+Never allow the AI agent to execute arbitrary commands directly on the host machine.
+
+All repository code execution must happen inside Docker.
+
+Validate:
+
+* file paths
+* commands
+* working directory
+* repository boundaries
+
+Prevent:
+
+```text
+../../
+```
+
+path traversal.
+
+Prevent:
+
+* absolute host paths
+* symlink escapes
+* host filesystem access
+* Docker socket access
+* environment secret access
+
+---
+
+# 13. DOCKER SANDBOX
+
+The sandbox is one of the most important components.
+
+Every repair job gets an isolated environment.
+
+Example:
+
+```text
+Repair Job
+    ↓
+Create temporary workspace
+    ↓
+Create Docker container
+    ↓
+Copy repository
+    ↓
+Install dependencies
+    ↓
+Run tests
+    ↓
+Capture output
+    ↓
+Destroy container
+```
+
+Container requirements:
+
+* non-root user
+* CPU limit
+* memory limit
+* process limit
+* execution timeout
+* filesystem isolation
+* configurable network restriction
+* no Docker socket
+* no host secrets
+
+Never mount:
+
+```text
+/var/run/docker.sock
+```
+
+into the sandbox.
+
+---
+
+# 14. SANDBOX RESULTS
+
+Every command must return:
+
+```json
+{
+  "command": "...",
+  "exitCode": 0,
+  "stdout": "...",
+  "stderr": "...",
+  "duration": 3.21,
+  "timedOut": false
+}
+```
+
+Limit output size.
+
+Kill processes that exceed the timeout.
+
+---
+
+# 15. PYTHON LANGUAGE SUPPORT — MVP
+
+Initially support Python repositories.
+
+Detect:
+
+* Python
+* pytest
+* unittest
+* requirements.txt
+* pyproject.toml
+* setup.py
+
+The system should eventually support:
+
+* JavaScript
+* TypeScript
+* Java
+* C++
+* Go
+
+But do NOT implement all languages in the first milestone.
+
+Create a language adapter architecture.
+
+---
+
+# 16. LANGUAGE ADAPTER
+
+Create an interface:
+
+```text
+LanguageAdapter
+
+detect()
+
+installDependencies()
+
+detectTestFramework()
+
+runTests()
+
+runLinter()
+
+runBuild()
+
+collectDiagnostics()
+```
+
+Implement:
+
+PythonAdapter
+
+first.
+
+Later:
+
+JavaScriptAdapter
+
+TypeScriptAdapter
+
+JavaAdapter
+
+CppAdapter
+
+GoAdapter
+
+---
+
+# 17. BASELINE TEST
+
+Before modifying code:
+
+Run the existing tests.
+
+Example:
+
+```text
+BASELINE
+
+Tests: 24
+Passed: 18
+Failed: 6
+Skipped: 0
+Duration: 4.7s
+```
+
+Save this result.
+
+This is critical for measuring improvement.
+
+---
+
+# 18. ROOT CAUSE ANALYSIS
+
+The agent must inspect before editing.
+
+It should identify:
+
+* failing test
+* relevant files
+* relevant functions
+* stack trace
+* probable root cause
+* evidence
+* proposed change
+
+Return structured data:
+
+```json
+{
+  "problem": "...",
+  "rootCause": "...",
+  "affectedFiles": [],
+  "affectedFunctions": [],
+  "evidence": [],
+  "confidence": 0.87
+}
+```
+
+Clearly distinguish:
+
+OBSERVED FACT
+
+from:
+
+AI ANALYSIS
+
+from:
+
+PROPOSED SOLUTION
+
+---
+
+# 19. REPAIR PLAN
+
+Before changing code, create:
+
+```text
+REPAIR PLAN
+
+1. File
+2. Function/class
+3. Problem
+4. Root cause
+5. Proposed change
+6. Expected result
+7. Tests to run
+```
+
+Do not modify unrelated files without justification.
+
+---
+
+# 20. PATCH GENERATION
+
+Prefer structured patches/diffs.
+
+Do not blindly regenerate entire files.
+
+Patch should contain:
+
+* file
+* old content
+* new content
+* explanation
+
+Before applying:
+
+Validate that the expected original code still exists.
+
+If it doesn't:
+
+Return patch conflict to the agent.
+
+Do not overwrite blindly.
+
+---
+
+# 21. SELF-CORRECTION
+
+This is the primary feature of FixForge.
+
+Example:
+
+```text
+Attempt 1
+─────────
+Patch generated
+Tests: FAILED
+
+        ↓
+
+Analyze new failure
+
+        ↓
+
+Attempt 2
+─────────
+New patch generated
+Tests: FAILED
+
+        ↓
+
+Analyze again
+
+        ↓
+
+Attempt 3
+─────────
+New patch
+Tests: PASSED
+```
+
+The agent must remember previous attempts.
+
+Do not repeatedly apply the same failed patch.
+
+Store:
+
+* hypothesis
+* patch
+* changed files
+* test result
+* error
+* reason for failure
+
+---
+
+# 22. PREVENT REPEATED FAILURES
+
+Before generating a new patch:
+
+Give the agent previous attempts.
+
+Example:
+
+```text
+Previous attempt:
+Changed calculator.py line 42.
+
+Result:
+test_divide_zero FAILED.
+
+Reason:
+Expected fallback value was still incorrect.
+```
+
+The next agent iteration must explicitly consider previous failures.
+
+---
+
+# 23. VERIFICATION
+
+A fix is NOT verified simply because one test passes.
+
+Verification levels:
+
+## QUICK
+
+Target test.
+
+## STANDARD
+
+Target tests + related tests.
+
+## FULL
+
+Entire test suite + lint + build.
+
+Only show:
+
+VERIFIED
+
+when the selected verification criteria pass.
+
+---
+
+# 24. FINAL REPAIR REPORT
+
+Generate:
+
+```text
+FIXFORGE REPAIR REPORT
+
+Repository:
+...
+
+Issue:
+...
+
+Baseline:
+18/24 passed
+
+Root Cause:
+...
+
+Files Changed:
+...
+
+Attempts:
+3
+
+Attempt 1:
+FAILED
+
+Attempt 2:
+FAILED
+
+Attempt 3:
+PASSED
+
+Final:
+24/24 tests passed
+
+Lint:
+PASS
+
+Build:
+PASS
+
+Status:
+VERIFIED
+```
+
+---
+
+# 25. FRONTEND DESIGN
+
+The frontend should look like a professional developer platform.
+
+Use:
+
+React
+
+JavaScript
+
+Tailwind CSS
+
+Do NOT make it look like a generic ChatGPT clone.
+
+Design inspiration:
+
+* VS Code
+* GitHub
+* modern developer dashboards
+
+Use:
+
+* dark/light theme
+* code editor
+* terminal
+* diff viewer
+* status badges
+* test cards
+* agent timeline
+* repository tree
+
+---
+
+# 26. FRONTEND PAGES
+
+Create:
+
+## Landing Page
+
+Hero:
+
+# FixForge
+
+"Autonomous software repair that doesn't stop at generating a fix."
+
+Subtitle:
+
+"Diagnose. Patch. Execute. Test. Self-Correct. Verify."
+
+Buttons:
+
+Start Repair
+
+View Demo
+
+---
+
+## Dashboard
+
+Display:
+
+* active repairs
+* completed repairs
+* failed repairs
+* successful repair percentage
+* average iterations
+* average repair time
+
+---
+
+## New Repair
+
+Fields:
+
+Repository
+
+Issue/Error
+
+Model
+
+Verification Level
+
+Max Iterations
+
+Start Repair
+
+---
+
+## Repair Workspace
+
+Layout:
+
+LEFT:
+
+Repository tree
+
+CENTER:
+
+Agent timeline
+
+RIGHT:
+
+Repair status
+
+BOTTOM:
+
+Terminal/Test output
+
+---
+
+## Code Diff
+
+Display:
+
+Before
+
+After
+
+Unified diff
+
+Syntax highlighting.
+
+---
+
+## Test Results
+
+Show:
+
+```text
+Before
+18 / 24
+
+After
+24 / 24
+```
+
+---
+
+## Repair History
+
+Display:
+
+* repository
+* issue
+* date
+* status
+* iterations
+* duration
+
+---
+
+# 27. LIVE AGENT ACTIVITY
+
+Use WebSocket.
+
+Events:
+
+```text
+agent.started
+
+repository.analyzed
+
+baseline.started
+
+baseline.completed
+
+failure.detected
+
+analysis.started
+
+analysis.completed
+
+patch.generated
+
+patch.applied
+
+sandbox.started
+
+sandbox.completed
+
+test.started
+
+test.completed
+
+self_correction.started
+
+verification.started
+
+repair.completed
+
+repair.failed
+```
+
+Frontend should update without page refresh.
+
+---
+
+# 28. NODE.JS API
+
+Create REST endpoints.
+
+Examples:
+
+```text
+POST /api/projects
+
+GET /api/projects
+
+GET /api/projects/:id
+
+POST /api/repairs
+
+GET /api/repairs/:id
+
+POST /api/repairs/:id/cancel
+
+GET /api/repairs/:id/status
+
+GET /api/repairs/:id/iterations
+
+GET /api/repairs/:id/tests
+
+GET /api/repairs/:id/diff
+
+GET /api/repairs/:id/report
+```
+
+Keep:
+
+routes
+
+controllers
+
+services
+
+repositories
+
+models
+
+separate.
+
+---
+
+# 29. NODE → PYTHON COMMUNICATION
+
+Node.js should communicate with the Python AI service.
+
+Preferred:
+
+HTTP REST
+
+and/or
+
+WebSocket for streaming.
+
+Example:
+
+```text
+Node.js
+POST /agent/repair
+        ↓
+Python Agent
+        ↓
+LangGraph
+        ↓
+Repair process
+        ↓
+Events
+        ↓
+Node.js
+        ↓
+React
+```
+
+Do not tightly couple the Node backend to LangGraph internals.
+
+---
+
+# 30. SQLITE DATABASE DESIGN
+
+Use SQLite.
+
+Recommended entities:
+
+User
+
+Project
+
+Repository
+
+RepairJob
+
+AgentIteration
+
+ToolCall
+
+Patch
+
+TestRun
+
+SandboxRun
+
+RepairReport
+
+AuditLog
+
+Relationships:
+
+```text
+User
+ ↓
+Projects
+ ↓
+Repositories
+ ↓
+RepairJobs
+ ↓
+AgentIterations
+ ↓
+ToolCalls
+Patches
+TestRuns
+SandboxRuns
+ ↓
+RepairReport
+```
+
+Use UUIDs.
+
+Add:
+
+createdAt
+
+updatedAt
+
+status
+
+where appropriate.
+
+---
+
+# 31. AUTHENTICATION
+
+Implement after the core repair loop works.
+
+Use:
+
+JWT
+
+Password hashing
+
+Protected routes.
+
+Never store plaintext passwords.
+
+Never store API keys in the database.
+
+---
+
+# 32. GITHUB INTEGRATION
+
+Later milestone.
+
+Allow:
+
+```text
+GitHub URL
+   ↓
+Clone
+   ↓
+Create FixForge branch
+   ↓
+Repair
+   ↓
+Test
+   ↓
+Commit
+   ↓
+Create Pull Request
+```
+
+PR should contain:
+
+Summary
+
+Root Cause
+
+Files Changed
+
+Tests
+
+Verification Status
+
+Never automatically merge.
+
+Require user approval.
+
+---
+
+# 33. HUMAN APPROVAL
+
+Require approval for:
+
+* pushing code
+* creating PR
+* modifying CI
+* deleting files
+* dependency changes
+* potentially dangerous operations
+
+The AI can work autonomously inside its sandbox.
+
+External actions require user approval.
+
+---
+
+# 34. DATABASE EVENTS / AUDIT LOG
+
+Store important events:
+
+* repair started
+* patch created
+* patch applied
+* test started
+* test failed
+* correction started
+* repair verified
+* GitHub action approved
+
+Audit records should include:
+
+timestamp
+
+job ID
+
+event
+
+metadata
+
+---
+
+# 35. ERROR HANDLING
+
+Handle:
+
+* LLM timeout
+* LLM API failure
+* malformed LLM response
+* patch conflict
+* test failure
+* test timeout
+* Docker failure
+* dependency installation failure
+* GitHub failure
+* invalid repository
+* repository too large
+* unsupported language
+
+Never crash the entire backend.
+
+Return structured errors.
+
+---
+
+# 36. LOGGING
+
+Use structured logs.
+
+Example:
+
+```json
+{
+  "timestamp": "...",
+  "jobId": "...",
+  "event": "test_completed",
+  "status": "failed",
+  "duration": 4.2
+}
+```
+
+Never log:
+
+* API keys
+* passwords
+* tokens
+* secrets
+
+---
+
+# 37. ENVIRONMENT VARIABLES
+
+Create:
+
+.env.example
+
+Node:
+
+```text
+PORT=5000
+DATABASE_URL=file:./dev.db
+AI_SERVICE_URL=http://localhost:8000
+JWT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+```
+
+Python:
+
+```text
+AI_PORT=8000
+LLM_PROVIDER=
+LLM_MODEL=
+LLM_API_KEY=
+MAX_ITERATIONS=5
+SANDBOX_TIMEOUT=120
+```
+
+Never commit .env.
+
+---
+
+# 38. PROJECT STRUCTURE
+
+Use:
+
+```text
+fixforge/
+
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── layouts/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   ├── context/
+│   │   └── utils/
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── middleware/
+│   │   ├── repositories/
+│   │   ├── websocket/
+│   │   ├── utils/
+│   │   └── app.js
+│   ├── prisma/
+│   │   └── schema.prisma
+│   └── package.json
+│
+├── ai-agent/
+│   ├── app/
+│   │   ├── agents/
+│   │   ├── graph/
+│   │   ├── tools/
+│   │   ├── providers/
+│   │   ├── sandbox/
+│   │   ├── analyzers/
+│   │   ├── adapters/
+│   │   ├── schemas/
+│   │   └── main.py
+│   ├── tests/
+│   └── requirements.txt
+│
+├── sandbox/
+│   ├── Dockerfile
+│   └── scripts/
+│
+├── examples/
+│   └── buggy-python-project/
+│
+├── benchmarks/
+│
+├── docs/
+│
+├── docker-compose.yml
+├── .env.example
+├── README.md
+├── ARCHITECTURE.md
+├── SECURITY.md
+└── .gitignore
+```
+
+---
+
+# 39. TESTING
+
+Frontend:
+
+* component tests
+* integration tests
+
+Node backend:
+
+* API tests
+* service tests
+* database tests
+
+Python:
+
+* agent tests
+* tool tests
+* sandbox tests
+* parser tests
+* state transition tests
+
+Important:
+
+Do not make unit tests depend on live LLM APIs.
+
+Mock LLM responses.
+
+---
+
+# 40. DEMO PROJECT
+
+Create:
+
+```text
+examples/buggy-python-project/
+```
+
+It should contain realistic bugs.
+
+Example:
+
+```text
+calculator.py
+user_service.py
+data_processor.py
+tests/
+```
+
+Create several deliberate bugs.
+
+Example:
+
+* incorrect condition
+* edge-case failure
+* incorrect transformation
+* missing validation
+
+The bugs should be realistic enough to demonstrate autonomous repair.
+
+---
+
+# 41. DEMO
+
+The ideal demo:
+
+```text
+User:
+Fix the failing tests.
+```
+
+FixForge:
+
+```text
+Repository analyzed.
+
+Baseline:
+7/10 tests passing.
+
+3 failures detected.
+
+Analyzing root cause...
+
+Root cause identified.
+
+Generating patch...
+
+Patch applied.
+
+Running tests...
+
+8/10 passed.
+
+2 failures remain.
+
+Self-correction triggered.
+
+Analyzing previous attempt...
+
+Generating correction...
+
+Running tests...
+
+10/10 passed.
+
+Running verification...
+
+Lint: PASS
+Tests: PASS
+
+REPAIR VERIFIED ✓
+```
+
+Then show the final diff.
+
+---
+
+# 42. BENCHMARK SYSTEM
+
+Create a benchmark dataset.
+
+Each task should contain:
+
+* bug ID
+* repository
+* description
+* failing test
+* expected behavior
+* difficulty
+* language
+* framework
+
+Track:
+
+Repair Success Rate
+
+Average Attempts
+
+Average Repair Time
+
+Regression Rate
+
+Patch Size
+
+Test Improvement
+
+LLM Cost
+
+---
+
+# 43. MODEL COMPARISON
+
+Because FixForge is model-agnostic, allow comparison.
+
+Example:
+
+Model A
+
+Model B
+
+Model C
+
+Measure:
+
+* successful repairs
+* average attempts
+* latency
+* cost
+* regression rate
+
+Display results on an analytics page.
+
+Do not invent benchmark results.
+
+Only display measured data.
+
+---
+
+# 44. RAG
+
+Do NOT implement RAG in the first version.
+
+First implement:
+
+repository search
+
+file search
+
+symbol search
+
+AST analysis
+
+Only introduce RAG when repositories become large.
+
+Possible later implementation:
+
+SQLite + vector extension or separate vector database.
+
+Potential options:
+
+pgvector
+
+Qdrant
+
+Chroma
+
+But do not replace SQLite unnecessarily in the initial architecture.
+
+---
+
+# 45. AST ANALYSIS
+
+Later add Python AST analysis.
+
+Extract:
+
+* classes
+* functions
+* imports
+* calls
+* symbols
+
+Create a repository code map.
+
+Example:
+
+```text
+Repository
+ ├── user_service.py
+ │    ├── UserService
+ │    ├── create_user()
+ │    └── validate_user()
+ │
+ └── database.py
+      └── get_connection()
+```
+
+This helps the agent locate relevant code.
+
+---
+
+# 46. SECURITY REQUIREMENTS
+
+Treat every repository as untrusted.
+
+Implement:
+
+* Docker isolation
+* non-root execution
+* resource limits
+* timeout
+* filesystem restrictions
+* path validation
+* command restrictions
+* network restrictions
+* secret isolation
+* repository size limits
+* output limits
+
+Document the security architecture.
+
+Create:
+
+SECURITY.md
+
+---
+
+# 47. PERFORMANCE
+
+Do not optimize prematurely.
+
+First ensure correctness.
+
+Later optimize:
+
+* caching
+* parallel file analysis
+* test selection
+* incremental testing
+* model routing
+* background jobs
+
+---
+
+# 48. COST CONTROL
+
+Implement:
+
+MAX_ITERATIONS
+
+MAX_MODEL_CALLS
+
+MAX_OUTPUT_SIZE
+
+SANDBOX_TIMEOUT
+
+MAX_REPOSITORY_SIZE
+
+MAX_FILE_SIZE
+
+MAX_JOB_DURATION
+
+Stop runaway jobs.
+
+---
+
+# 49. AGENT SYSTEM PROMPT
+
+The AI repair agent should follow these rules:
+
+```text
+You are FixForge, an autonomous software repair agent.
+
+Your goal is to repair software failures and provide execution evidence that the repair works.
+
+Rules:
+
+1. Inspect before editing.
+2. Reproduce the failure whenever possible.
+3. Identify evidence for the root cause.
+4. Make the smallest safe change.
+5. Never claim success without test evidence.
+6. Run tests after modifications.
+7. If tests fail, analyze the new failure.
+8. Do not repeat a failed patch without a new hypothesis.
+9. Remember previous attempts.
+10. Do not modify unrelated code.
+11. Stay inside the assigned repository.
+12. Never access host secrets.
+13. Never execute code outside the sandbox.
+14. Stop after the maximum number of iterations.
+15. Produce a final structured report.
+```
+
+---
+
+# 50. AGENT BEHAVIOR
+
+Preferred sequence:
+
+```text
+OBSERVE
+↓
+REPRODUCE
+↓
+ANALYZE
+↓
+PLAN
+↓
+ACT
+↓
+TEST
+↓
+OBSERVE
+↓
+CORRECT
+↓
+VERIFY
+```
+
+Never:
+
+```text
+Generate code
+↓
+Immediately claim success
+```
+
+---
+
+# 51. FINAL STATUS RULES
+
+Possible statuses:
+
+ANALYZING
+
+PATCHING
+
+TESTING
+
+SELF_CORRECTING
+
+VERIFYING
+
+VERIFIED
+
+FAILED
+
+TIMEOUT
+
+CANCELLED
+
+The system must never mark a repair:
+
+VERIFIED
+
+without actual execution evidence.
+
+---
+
+# 52. FAILURE RESULT
+
+If the agent cannot repair the issue:
+
+Return:
+
+```text
+REPAIR UNSUCCESSFUL
+
+Attempts: 5/5
+
+Last failure:
+...
+
+Files modified:
+...
+
+Tests:
+...
+
+Reason:
+...
+
+Suggested next step:
+...
+```
+
+Do not hallucinate success.
+
+---
+
+# 53. FUTURE FEATURES
+
+After the core system is reliable, consider:
+
+* Code Review Agent
+* Security Agent
+* Test Generation Agent
+* Performance Agent
+* Dependency Upgrade Agent
+* CI/CD integration
+* GitHub Actions
+* Jira
+* Slack
+* automatic regression test generation
+* automatic rollback
+* multi-agent collaboration
+* team workspaces
+* RBAC
+* enterprise deployment
+
+Do not implement these before the core repair engine works.
+
+---
+
+# 54. DEVELOPMENT MILESTONES
+
+## MILESTONE 1 — PROJECT FOUNDATION
+
+Build:
+
+* frontend
+* Node/Express backend
+* SQLite database
+* Python AI service
+* basic API communication
+
+Goal:
+
+All three services run successfully.
+
+---
+
+## MILESTONE 2 — REPOSITORY ANALYSIS
+
+Build:
+
+* repository upload
+* file tree
+* file reading
+* code search
+* Python detection
+* test detection
+
+Goal:
+
+Agent can understand a Python repository.
+
+---
+
+## MILESTONE 3 — SANDBOX
+
+Build:
+
+* Docker sandbox
+* command execution
+* test execution
+* output capture
+* timeout
+* resource limits
+
+Goal:
+
+Safely execute repository code.
+
+---
+
+## MILESTONE 4 — FIRST REPAIR
+
+Build:
+
+* baseline tests
+* root cause analysis
+* repair plan
+* patch generation
+* patch application
+
+Goal:
+
+Fix one real bug.
+
+---
+
+## MILESTONE 5 — SELF-CORRECTION
+
+Build:
+
+* retry loop
+* previous attempt memory
+* failure analysis
+* correction
+* verification
+
+Goal:
+
+FixForge can fail, learn from the failure, and try again.
+
+---
+
+## MILESTONE 6 — PROFESSIONAL UI
+
+Build:
+
+* dashboard
+* repair workspace
+* agent timeline
+* terminal
+* test results
+* code diff
+
+---
+
+## MILESTONE 7 — PERSISTENCE
+
+Build:
+
+* SQLite persistence
+* repair history
+* reports
+* metrics
+
+---
+
+## MILESTONE 8 — GITHUB
+
+Build:
+
+* GitHub repository import
+* branches
+* commits
+* Pull Requests
+
+---
+
+## MILESTONE 9 — INTELLIGENCE
+
+Build:
+
+* AST analysis
+* semantic search
+* RAG
+* multi-language support
+
+---
+
+## MILESTONE 10 — BENCHMARKING
+
+Build:
+
+* bug dataset
+* automated evaluation
+* model comparison
+* metrics dashboard
+
+---
+
+# 55. FIRST MVP REQUIREMENT
+
+The MVP must successfully complete:
+
+```text
+Broken Python Repository
+        ↓
+FixForge
+        ↓
+Baseline Tests
+        ↓
+Failure Analysis
+        ↓
+Patch
+        ↓
+Docker Sandbox
+        ↓
+Test
+        ↓
+Failure
+        ↓
+Self-Correction
+        ↓
+New Patch
+        ↓
+Test
+        ↓
+PASS
+        ↓
+Verification
+        ↓
+Final Report
+```
+
+If this workflow works reliably, the core product is working.
+
+---
+
+# 56. IMPORTANT DEVELOPMENT RULE
+
+Do NOT generate the entire application blindly in one response.
+
+Work milestone by milestone.
+
+After completing each milestone:
+
+1. Run the application.
+2. Run tests.
+3. Check API endpoints.
+4. Check frontend.
+5. Check database.
+6. Check Python service.
+7. Fix errors.
+8. Update documentation.
+9. Report what was actually completed.
+
+Do not claim something works unless it has been tested.
+
+---
+
+# 57. CODE QUALITY RULES
+
+Follow:
+
+* clean architecture
+* modular code
+* reusable services
+* meaningful naming
+* error handling
+* validation
+* logging
+* security
+* testing
+* environment configuration
+
+Avoid:
+
+* giant files
+* duplicated code
+* hard-coded secrets
+* fake APIs
+* placeholder functionality presented as complete
+* unnecessary dependencies
+* uncontrolled agent loops
+
+---
+
+# 58. DOCUMENTATION
+
+Create:
+
+README.md
+
+ARCHITECTURE.md
+
+SECURITY.md
+
+API.md
+
+DEVELOPMENT.md
+
+BENCHMARKS.md
+
+CONTRIBUTING.md
+
+Documentation should explain:
+
+* problem
+* solution
+* architecture
+* agent loop
+* sandbox
+* database
+* API
+* setup
+* environment variables
+* testing
+* security
+* benchmarking
+* limitations
+* future roadmap
+
+---
+
+# 59. RESUME QUALITY
+
+The finished project should demonstrate:
+
+* Agentic AI
+* LLM tool calling
+* autonomous software repair
+* self-correction
+* React
+* JavaScript
+* Tailwind CSS
+* Node.js
+* Express.js
+* SQLite
+* Python
+* LangGraph
+* Docker
+* Git/GitHub
+* REST APIs
+* WebSockets
+* software testing
+* security
+* system architecture
+* evaluation/benchmarking
+
+Do not focus only on UI.
+
+The agent architecture, sandbox, testing, and verification are the most important components.
+
+---
+
+# 60. FINAL PRODUCT DEFINITION
+
+FixForge is:
+
+> An autonomous, model-agnostic software repair platform that analyzes broken repositories, generates code patches, executes them inside isolated Docker sandboxes, observes real test failures, self-corrects its previous attempts, and verifies the final repair with measurable execution evidence.
+
+The key philosophy is:
+
+```text
+Generated ≠ Fixed
+
+Executed + Tested + Verified = Fixed
+```
+
+---
+
+# 61. START NOW
+
+Begin with:
+
+## MILESTONE 1
+
+Create the complete initial repository structure.
+
+Then implement:
+
+1. React + Vite frontend.
+2. Tailwind CSS.
+3. Node.js + Express backend.
+4. SQLite + Prisma.
+5. Python FastAPI AI service.
+6. Basic Node → Python communication.
+7. Health-check endpoints.
+8. Environment configuration.
+9. Basic database schema.
+10. README.
+11. ARCHITECTURE.md.
+12. .env.example.
+13. Basic tests.
+
+Do NOT implement the full repair engine yet.
+
+After MILESTONE 1 is complete, provide:
+
+```text
+MILESTONE 1 REPORT
+
+Files created:
+...
+
+Services running:
+...
+
+Database:
+...
+
+API:
+...
+
+AI service:
+...
+
+Frontend:
+...
+
+Tests:
+...
+
+Known issues:
+...
+
+Next milestone:
+...
+```
+
+Then wait for approval before moving to Milestone 2.
+
+# END OF MASTER PROMPT

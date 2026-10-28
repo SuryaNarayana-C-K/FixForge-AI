@@ -1,0 +1,14 @@
+{
+  "id": "collection_failure",
+  "name": "Test collection failure",
+  "category": "collection_failure",
+  "description": "Syntax error in test file prevents test runner from collecting any tests.",
+  "expected_behavior": "Verification policy flags EXECUTION_ERROR and refuses to mark VERIFIED.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": false,
+  "expected_baseline_exit_code": 2,
+  "expected_baseline_status": "EXECUTION_ERROR",
+  "expected_post_status": "EXECUTION_ERROR",
+  "relative_path": "collection_failure"
+}

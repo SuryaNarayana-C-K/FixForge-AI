@@ -1,0 +1,117 @@
+# =============================================================================
+# FixForge Docker Ignore Configuration
+# Prevents leaking credentials, local databases, temporary artifacts, and caches
+# =============================================================================
+
+# Version control & Git credentials
+.git
+**/.git
+.gitignore
+**/.gitignore
+.gitattributes
+**/.gitattributes
+.gitmodules
+**/.gitmodules
+
+# Environment variables and secrets
+.env
+**/.env
+.env.*
+**/.env.*
+!.env.example
+!**/.env.example
+*.pem
+**/*.pem
+*.key
+**/*.key
+*.cert
+**/*.cert
+*.crt
+**/*.crt
+*.pfx
+**/*.pfx
+*.p12
+**/*.p12
+id_rsa*
+**/id_rsa*
+id_ed25519*
+**/id_ed25519*
+.ssh
+**/.ssh
+
+# Database files & journals across all directories
+database/*.db
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
+database/backups
+database/staging.db
+database/dev.db
+*.db
+**/*.db
+*.db-journal
+**/*.db-journal
+*.db-wal
+**/*.db-wal
+*.db-shm
+**/*.db-shm
+*.sqlite
+**/*.sqlite
+*.sqlite3
+**/*.sqlite3
+
+# Dependencies and lockfile backups
+node_modules
+**/node_modules
+node_modules_*
+**/node_modules_*
+pnpm_backup
+**/pnpm_backup
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python virtualenvs, bytecode, and test caches
+__pycache__
+**/__pycache__
+*.pyc
+**/*.pyc
+*.pyo
+**/*.pyo
+*.pyd
+**/*.pyd
+.pytest_cache
+**/.pytest_cache
+.ruff_cache
+**/.ruff_cache
+.venv
+**/.venv
+venv
+**/venv
+env
+**/env
+
+# Build outputs and intermediate bundles
+dist
+**/dist
+build
+**/build
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Temporary, scratch, and test artifacts
+tmp*
+**/tmp*
+scratch
+**/scratch
+.benchmark_workspaces
+**/.benchmark_workspaces
+.conversation
+**/.conversation
+.agents
+**/.agents
+repos
+**/repos
+benchmarks/workspaces
+benchmarks/results

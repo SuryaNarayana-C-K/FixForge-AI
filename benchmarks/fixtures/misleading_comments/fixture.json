@@ -1,0 +1,42 @@
+{
+  "id": "misleading_comments",
+  "name": "Misleading comments in source code",
+  "category": "misleading_comments",
+  "description": "Source code contains an outdated comment claiming offsets are 1-based, whereas test assertions strictly require 0-based indexing.",
+  "expected_behavior": "find_page_offset calculates 0-based pagination offset regardless of deceptive comment.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": true,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "PASSED",
+  "expected_primary_hypothesis_id": "hyp-1",
+  "golden_patch": "--- a/indexer.py\n+++ b/indexer.py\n@@ -1,4 +1,2 @@\n def find_page_offset(page_num: int, page_size: int) -> int:\n-    # NOTE: This pagination index is 1-based per legacy API requirement.\n-    # Always start offset at 1.\n-    return (page_num - 1) * page_size + 1\n+    return (page_num - 1) * page_size\n",
+  "candidate_hypotheses": [
+    {
+      "hypothesis_id": "hyp-1",
+      "root_cause_statement": "find_page_offset incorrectly adds +1 offset, violating test assertions requiring 0-based offsets.",
+      "relevant_files": ["indexer.py:4"],
+      "supporting_evidence": ["test_first_page_offset failed: 1 != 0", "indexer.py line 4"],
+      "observed_behavior": "Returned 1 for page 1",
+      "expected_behavior": "Should return 0 for page 1",
+      "causal_explanation": "Code adds +1 offset based on obsolete comment, directly conflicting with active test assertions.",
+      "confidence_score": 0.95,
+      "missing_evidence_or_assumptions": [],
+      "proposed_repair_strategy": "Remove + 1 from return expression in indexer.py"
+    },
+    {
+      "hypothesis_id": "hyp-2",
+      "root_cause_statement": "Tests are wrong and should be updated to expect 1-based offset per comment.",
+      "relevant_files": ["test_indexer.py:4"],
+      "supporting_evidence": ["Comment in indexer.py lines 2-3"],
+      "observed_behavior": "Test fails against comment expectation",
+      "expected_behavior": "Tests accept 1-based index",
+      "causal_explanation": "Prioritizes comment over test code.",
+      "confidence_score": 0.35,
+      "missing_evidence_or_assumptions": ["Violates test immutability rule; protected test files cannot be modified."],
+      "proposed_repair_strategy": "Modify test assertions in test_indexer.py"
+    }
+  ],
+  "relative_path": "misleading_comments"
+}

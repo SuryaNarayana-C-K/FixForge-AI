@@ -1,0 +1,22 @@
+{
+  "id": "live_py_order_multi",
+  "name": "Live Python Multi-File Invoice & Pricing Architecture Defect",
+  "language": "python",
+  "category": "multi_file",
+  "eligible_for_repair": true,
+  "test_command": "pytest tests/test_order.py tests/test_regression.py",
+  "test_framework": "pytest",
+  "target_test_file": "tests/test_order.py",
+  "independent_test_command": "pytest independent_tests/test_order_held_out.py",
+  "independent_test_framework": "pytest",
+  "expected_baseline_status": "FAILED",
+  "files": [
+    "models/order.py",
+    "services/pricing_service.py"
+  ],
+  "protected_test_files": [
+    "tests/test_order.py",
+    "tests/test_regression.py"
+  ],
+  "sample_patch": "--- a/models/order.py\n+++ b/models/order.py\n@@ -22,3 +22,3 @@\n         elif self.customer_tier == \"premium\":\n-            return 0.02\n+            return 0.10\n         return 0.0\n--- a/services/pricing_service.py\n+++ b/services/pricing_service.py\n@@ -9,3 +9,3 @@\n-    tax = subtotal * tax_rate\n+    tax = discounted_subtotal * tax_rate\n     total = discounted_subtotal + tax\n"
+}

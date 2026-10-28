@@ -1,0 +1,12 @@
+{
+  "name": "buggy-javascript-project",
+  "version": "1.0.0",
+  "description": "Deterministic buggy JavaScript project for FixForge Milestone 8",
+  "main": "calculator.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2"
+  }
+}

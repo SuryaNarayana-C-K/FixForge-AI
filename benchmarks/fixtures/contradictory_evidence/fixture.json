@@ -1,0 +1,29 @@
+{
+  "id": "contradictory_evidence",
+  "name": "Contradictory evidence in test suite",
+  "category": "contradictory_evidence",
+  "description": "Test suite contains contradictory assertions for identical input PENDING (one expects IN_PROGRESS, another QUEUED), requiring abstention and human review.",
+  "expected_behavior": "Engine detects mutually conflicting assertions and flags abstention instead of guessing an impossible repair.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": false,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "CORRECT_ABSTENTION",
+  "expected_abstention": true,
+  "candidate_hypotheses": [
+    {
+      "hypothesis_id": "hyp-1",
+      "root_cause_statement": "Contradictory test specifications: test_status_in_progress expects IN_PROGRESS while test_status_queued expects QUEUED for same input.",
+      "relevant_files": ["status_resolver.py:2"],
+      "supporting_evidence": ["test_status_in_progress: 'UNKNOWN' != 'IN_PROGRESS'", "test_status_queued: 'UNKNOWN' != 'QUEUED'"],
+      "observed_behavior": "Both tests fail simultaneously with incompatible expectations",
+      "expected_behavior": "Cannot be satisfied without resolving requirement contradiction",
+      "causal_explanation": "Deterministic function cannot return two different strings for identical argument.",
+      "confidence_score": 0.30,
+      "missing_evidence_or_assumptions": ["Contradictory test assertions cannot be simultaneously satisfied."],
+      "proposed_repair_strategy": "Abstain and escalate to human review"
+    }
+  ],
+  "relative_path": "contradictory_evidence"
+}

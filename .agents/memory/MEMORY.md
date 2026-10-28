@@ -1,0 +1,1 @@
+- [Local SQLite runtime](sqlite-runtime.md) — this workspace uses Node 24's built-in node:sqlite because native driver installation is unavailable.

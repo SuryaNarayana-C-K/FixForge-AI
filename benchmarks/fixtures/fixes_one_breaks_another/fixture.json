@@ -1,0 +1,59 @@
+{
+  "id": "fixes_one_breaks_another",
+  "name": "Candidate patch fixes one test but breaks another",
+  "category": "fixes_one_breaks_another",
+  "description": "Candidate fix fixes test_negative_age_rejected but breaks test_elderly_valid by inappropriately capping age at 65. Comprehensive golden patch fixes lower bound without regression.",
+  "expected_behavior": "Engine detects regression in candidate patch and either selects non-regressing candidate or flags REGRESSION_DETECTED.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": true,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "PASSED",
+  "expected_primary_hypothesis_id": "hyp-1",
+  "candidate_patch": "--- a/validator.py\n+++ b/validator.py\n@@ -1,3 +1,3 @@\n def validate_age_range(age: int) -> bool:\n-    # BUG: only checks upper bound, allowing negative ages\n-    return age <= 120\n+    return 0 <= age < 65\n",
+  "candidate_patches": [
+    {
+      "candidate_id": "cand-regressive",
+      "hypothesis_id": "hyp-2",
+      "diff": "--- a/validator.py\n+++ b/validator.py\n@@ -1,3 +1,3 @@\n def validate_age_range(age: int) -> bool:\n-    # BUG: only checks upper bound, allowing negative ages\n-    return age <= 120\n+    return 0 <= age < 65\n",
+      "files": ["validator.py"],
+      "rationale": "Cap valid ages at retirement age (65)"
+    },
+    {
+      "candidate_id": "cand-optimal",
+      "hypothesis_id": "hyp-1",
+      "diff": "--- a/validator.py\n+++ b/validator.py\n@@ -1,3 +1,3 @@\n def validate_age_range(age: int) -> bool:\n-    # BUG: only checks upper bound, allowing negative ages\n-    return age <= 120\n+    return 0 <= age <= 120\n",
+      "files": ["validator.py"],
+      "rationale": "Add lower bound check while maintaining upper bound"
+    }
+  ],
+  "golden_patch": "--- a/validator.py\n+++ b/validator.py\n@@ -1,3 +1,3 @@\n def validate_age_range(age: int) -> bool:\n-    # BUG: only checks upper bound, allowing negative ages\n-    return age <= 120\n+    return 0 <= age <= 120\n",
+  "candidate_hypotheses": [
+    {
+      "hypothesis_id": "hyp-1",
+      "root_cause_statement": "validate_age_range lacks lower bound check (age >= 0) while maintaining upper bound (age <= 120).",
+      "relevant_files": ["validator.py:3"],
+      "supporting_evidence": ["test_negative_age_rejected failed: True is not False", "validator.py line 3"],
+      "observed_behavior": "Negative age returned True",
+      "expected_behavior": "Return False for negative age, while preserving True for age 80",
+      "causal_explanation": "Only upper bound was checked, missing 0 <= age condition.",
+      "confidence_score": 0.95,
+      "missing_evidence_or_assumptions": [],
+      "proposed_repair_strategy": "Change check to 0 <= age <= 120"
+    },
+    {
+      "hypothesis_id": "hyp-2",
+      "root_cause_statement": "Cap valid ages at retirement age (65).",
+      "relevant_files": ["validator.py:3"],
+      "supporting_evidence": ["validator.py line 3"],
+      "observed_behavior": "Ages over 65 pass",
+      "expected_behavior": "Cap at 65",
+      "causal_explanation": "Assumes working age range.",
+      "confidence_score": 0.40,
+      "missing_evidence_or_assumptions": ["Causes regression on test_elderly_valid (age 80)."],
+      "proposed_repair_strategy": "Change check to 0 <= age < 65"
+    }
+  ],
+  "relative_path": "fixes_one_breaks_another"
+}

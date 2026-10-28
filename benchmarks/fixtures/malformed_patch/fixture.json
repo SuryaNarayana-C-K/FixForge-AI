@@ -1,0 +1,15 @@
+{
+  "id": "malformed_patch",
+  "name": "Malformed patch",
+  "category": "malformed_patch",
+  "description": "Unified diff has corrupted @@ hunk line numbers and truncated syntax.",
+  "expected_behavior": "PatchValidator detects syntax violation and rejects patch before application.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": false,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "REJECTED_INVALID_PATCH",
+  "candidate_patch": "--- a/helper.py\n+++ b/helper.py\n@@ -1,2 +1,2\n-def get_status() -> str:\n+def get_status() -> str:\n",
+  "relative_path": "malformed_patch"
+}

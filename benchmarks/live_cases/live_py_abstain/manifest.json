@@ -1,0 +1,18 @@
+{
+  "id": "live_py_abstain",
+  "name": "Live Python Contradictory Specification Abstention",
+  "language": "python",
+  "category": "insufficient_evidence",
+  "eligible_for_repair": false,
+  "test_command": "pytest tests/test_ambiguous.py",
+  "test_framework": "pytest",
+  "target_test_file": "tests/test_ambiguous.py",
+  "independent_test_command": "pytest tests/test_ambiguous.py",
+  "independent_test_framework": "pytest",
+  "expected_baseline_status": "FAILED",
+  "expected_abstention": true,
+  "files": ["ambiguous.py"],
+  "protected_test_files": [
+    "tests/test_ambiguous.py"
+  ]
+}

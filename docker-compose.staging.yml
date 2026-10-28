@@ -1,0 +1,168 @@
+# =============================================================================
+# FixForge Autonomous Software Repair Platform — Local Staging Stack (M13.6)
+# =============================================================================
+# ARCHITECTURE & SECURITY BOUNDARIES:
+# - All published ports are strictly bound to 127.0.0.1 (never exposed publicly).
+# - Dedicated persistent volume (staging-sqlite-data) isolates staging database
+#   at /data/fixforge.db, completely separated from development database/dev.db.
+# - AI Agent executes in fail-closed remote mode using isolated sandbox worker.
+# - DOCKER SOCKET ISOLATION (M13.6):
+#   Host /var/run/docker.sock access is REMOVED from the general-purpose AI agent.
+#   All test and repair execution occurs inside dedicated rootless containers
+#   managed by fixforge-sandbox-worker over internal authenticated API.
+# - Demo authentication is disabled; strict JWT authentication is enforced.
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # 0. FixForge Sandbox Worker (Dedicated Rootless Container Execution Daemon)
+  # ---------------------------------------------------------------------------
+  fixforge-sandbox-worker:
+    build:
+      context: ./sandbox-worker
+      dockerfile: Dockerfile
+    image: fixforge/sandbox-worker:1.0.0
+    container_name: fixforge-staging-worker
+    restart: unless-stopped
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PORT=9000
+      - INTERNAL_WORKER_KEY=${INTERNAL_WORKER_KEY}
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:9000/v1/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - staging-network
+
+  # ---------------------------------------------------------------------------
+  # 1. FixForge AI Agent Service (Python 3.11 + FastAPI + Remote Sandbox Runner)
+  # ---------------------------------------------------------------------------
+  fixforge-ai:
+    build:
+      context: ./ai-agent
+      dockerfile: Dockerfile
+    image: fixforge/ai-agent:1.10.0
+    container_name: fixforge-staging-ai
+    restart: unless-stopped
+    user: "1000:1000"
+    env_file:
+      - .env.staging
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PORT=8000
+      - EXECUTION_MODE=docker
+      - EXECUTION_RUNNER=remote
+      - SANDBOX_WORKER_URL=http://fixforge-sandbox-worker:9000
+      - INTERNAL_WORKER_KEY=${INTERNAL_WORKER_KEY}
+      - ALLOW_LOCAL_SUBPROCESS=false
+      - SANDBOX_IMAGE=fixforge-sandbox:latest
+      - SANDBOX_TIMEOUT=120
+      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - LLM_MODEL=${LLM_MODEL:-gemini-3.6-flash}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - MAX_ITERATIONS=5
+      - HOST_WORKSPACE_ROOT=${HOST_WORKSPACE_ROOT:-.}
+      - FIXFORGE_ENV=staging
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+    volumes:
+      - ./repos:/app/repos
+      - ./examples:/app/examples
+    depends_on:
+      fixforge-sandbox-worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')\" || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - staging-network
+
+  # ---------------------------------------------------------------------------
+  # 2. FixForge API Service (Node.js Express + Prisma SQLite)
+  # ---------------------------------------------------------------------------
+  fixforge-api:
+    build:
+      context: .
+      dockerfile: artifacts/api-server/Dockerfile
+    image: fixforge/api:1.10.0
+    container_name: fixforge-staging-api
+    restart: unless-stopped
+    user: "1000:1000"
+    command: ["sh", "-c", "npx prisma db push --schema=./lib/db/prisma/schema.prisma --accept-data-loss --skip-generate && node artifacts/api-server/src/index.js"]
+    environment:
+      - NODE_ENV=staging
+      - FIXFORGE_ENV=staging
+      - PORT=5000
+      - DATABASE_URL=file:/data/fixforge.db
+      - AI_SERVICE_URL=http://fixforge-ai:8000
+      - JWT_SECRET=${JWT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GITHUB_OWNER=${GITHUB_OWNER:-}
+      - GITHUB_REPOSITORY=${GITHUB_REPOSITORY:-}
+      - GIT_PROVIDER=${GIT_PROVIDER:-mock}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost,http://127.0.0.1}
+      - ALLOW_LOCAL_SUBPROCESS=false
+    volumes:
+      - staging-sqlite-data:/data
+      - ./repos:/app/repos
+      - ./examples:/app/examples
+    ports:
+      - "127.0.0.1:5000:5000"
+    depends_on:
+      fixforge-ai:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - staging-network
+
+  # ---------------------------------------------------------------------------
+  # 3. FixForge Web Frontend (React + Vite SPA served via Nginx)
+  # ---------------------------------------------------------------------------
+  fixforge-web:
+    build:
+      context: .
+      dockerfile: artifacts/fixforge/Dockerfile
+    image: fixforge/web:1.10.0
+    container_name: fixforge-staging-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:80:80"
+    depends_on:
+      fixforge-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - staging-network
+
+volumes:
+  # Isolated staging volume ensuring persistence without touching development db
+  staging-sqlite-data:
+    driver: local
+
+networks:
+  staging-network:
+    driver: bridge

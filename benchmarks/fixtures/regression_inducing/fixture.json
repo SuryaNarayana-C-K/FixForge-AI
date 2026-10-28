@@ -1,0 +1,15 @@
+{
+  "id": "regression_inducing",
+  "name": "Regression-inducing candidate fix",
+  "category": "regression_inducing",
+  "description": "Candidate fix hardcodes low value to pass test_clamp_low, causing test_round_normal to fail as a regression.",
+  "expected_behavior": "Verification policy flags REGRESSION_DETECTED and rolls back candidate patch.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": false,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "REGRESSION_DETECTED",
+  "candidate_patch": "--- a/math_utils.py\n+++ b/math_utils.py\n@@ -1,5 +1,2 @@\n def clamp_and_round(val: float, low: float, high: float) -> int:\n-    if val > high:\n-        return int(high)\n-    return round(val)\n+    return int(low)\n",
+  "relative_path": "regression_inducing"
+}

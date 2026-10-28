@@ -1,0 +1,110 @@
+# =============================================================================
+# FixForge Autonomous Software Repair Platform — Production Docker Stack (M10)
+# =============================================================================
+# Architecture:
+# - fixforge-api: Node.js Express API Server (Healthcheck: /api/system/health)
+# - fixforge-ai: Python FastAPI AI Repair Engine
+# - fixforge-web: Static SPA Frontend (Vite build served via lightweight Nginx/Node)
+# - Persistent Volume: sqlite-data mounted at /data for zero data loss on restart
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # 1. FixForge API Service (Node.js Express + Prisma SQLite)
+  # ---------------------------------------------------------------------------
+  fixforge-api:
+    build:
+      context: .
+      dockerfile: artifacts/api-server/Dockerfile
+    image: fixforge/api:1.10.0
+    container_name: fixforge-api
+    restart: unless-stopped
+    user: "1000:1000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=file:/data/fixforge.db
+      - AI_SERVICE_URL=http://fixforge-ai:8000
+      - JWT_SECRET=${JWT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_OWNER=${GITHUB_OWNER}
+      - GITHUB_REPOSITORY=${GITHUB_REPOSITORY}
+      - GIT_PROVIDER=${GIT_PROVIDER:-github}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+    volumes:
+      - sqlite-data:/data
+    ports:
+      - "5000:5000"
+    depends_on:
+      fixforge-ai:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5000/api/system/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - fixforge-network
+
+  # ---------------------------------------------------------------------------
+  # 2. FixForge AI Agent Service (Python 3.11 + FastAPI + LangGraph)
+  # ---------------------------------------------------------------------------
+  fixforge-ai:
+    build:
+      context: ./ai-agent
+      dockerfile: Dockerfile
+    image: fixforge/ai-agent:1.10.0
+    container_name: fixforge-ai
+    restart: unless-stopped
+    user: "1000:1000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PORT=8000
+      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.0-flash}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MAX_ITERATIONS=5
+      - SANDBOX_TIMEOUT=120
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - fixforge-network
+
+  # ---------------------------------------------------------------------------
+  # 3. FixForge Web Frontend (React + Vite Client)
+  # ---------------------------------------------------------------------------
+  fixforge-web:
+    build:
+      context: .
+      dockerfile: artifacts/fixforge/Dockerfile
+    image: fixforge/web:1.10.0
+    container_name: fixforge-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      fixforge-api:
+        condition: service_healthy
+    networks:
+      - fixforge-network
+
+volumes:
+  # Persistent SQLite volume ensures durability across container upgrades
+  sqlite-data:
+    driver: local
+
+networks:
+  fixforge-network:
+    driver: bridge

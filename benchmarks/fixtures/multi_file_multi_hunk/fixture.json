@@ -1,0 +1,15 @@
+{
+  "id": "multi_file_multi_hunk",
+  "name": "Multi-file and multi-hunk patch",
+  "category": "multi_file_multi_hunk",
+  "description": "Multi-file defects requiring separate hunk replacements across math_ops.py and formatter.py.",
+  "expected_behavior": "Multiplication, average calculation, and currency formatting all work properly.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": true,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "PASSED",
+  "golden_patch": "--- a/math_ops.py\n+++ b/math_ops.py\n@@ -1,3 +1,3 @@\n def multiply(a: float, b: float) -> float:\n-    return a + b\n+    return a * b\n@@ -8,2 +8,2 @@\n-    return sum(nums) / (len(nums) - 1)\n+    return sum(nums) / len(nums)\n--- a/formatter.py\n+++ b/formatter.py\n@@ -1,3 +1,3 @@\n def format_currency(amount: float) -> str:\n-    return f\"{amount:.2f}\"\n+    return f\"${amount:.2f}\"\n",
+  "relative_path": "multi_file_multi_hunk"
+}

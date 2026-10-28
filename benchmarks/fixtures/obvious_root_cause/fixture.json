@@ -1,0 +1,42 @@
+{
+  "id": "obvious_root_cause",
+  "name": "One failure with an obvious root cause",
+  "category": "obvious_root_cause",
+  "description": "Temperature conversion formula subtracts 32 instead of adding 32.",
+  "expected_behavior": "celsius_to_fahrenheit(0) returns 32.0 and celsius_to_fahrenheit(100) returns 212.0",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": true,
+  "expected_baseline_exit_code": 1,
+  "expected_baseline_status": "FAILED",
+  "expected_post_status": "PASSED",
+  "expected_primary_hypothesis_id": "hyp-1",
+  "golden_patch": "--- a/converter.py\n+++ b/converter.py\n@@ -1,4 +1,4 @@\n def celsius_to_fahrenheit(celsius: float) -> float:\n     # BUG: subtracted offset instead of adding\n-    return (celsius * 9.0 / 5.0) - 32.0\n+    return (celsius * 9.0 / 5.0) + 32.0\n",
+  "candidate_hypotheses": [
+    {
+      "hypothesis_id": "hyp-1",
+      "root_cause_statement": "Inverted offset sign in celsius_to_fahrenheit formula.",
+      "relevant_files": ["converter.py:3"],
+      "supporting_evidence": ["test_freezing_point failed: assertion -32.0 == 32.0", "converter.py line 3"],
+      "observed_behavior": "Returned -32.0",
+      "expected_behavior": "Should return 32.0",
+      "causal_explanation": "Subtracting 32 instead of adding produces inverted offset.",
+      "confidence_score": 0.95,
+      "missing_evidence_or_assumptions": [],
+      "proposed_repair_strategy": "Change - 32.0 to + 32.0 in converter.py"
+    },
+    {
+      "hypothesis_id": "hyp-2",
+      "root_cause_statement": "Scale ratio inverted in formula.",
+      "relevant_files": ["converter.py:3"],
+      "supporting_evidence": ["converter.py line 3"],
+      "observed_behavior": "Zero point offset incorrect",
+      "expected_behavior": "32.0",
+      "causal_explanation": "Scale factor 9/5 assumed inverted.",
+      "confidence_score": 0.40,
+      "missing_evidence_or_assumptions": ["Does not explain why 0 celsius produces -32 instead of 0."],
+      "proposed_repair_strategy": "Change 9/5 to 5/9"
+    }
+  ],
+  "relative_path": "obvious_root_cause"
+}

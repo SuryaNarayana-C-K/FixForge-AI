@@ -1,0 +1,18 @@
+{
+  "id": "live_py_regression_inducing",
+  "name": "Live Python Patch Inducing Assertion Regression",
+  "language": "python",
+  "category": "regression_inducing",
+  "eligible_for_repair": false,
+  "test_command": "pytest tests/test_calc.py",
+  "test_framework": "pytest",
+  "target_test_file": "tests/test_calc.py",
+  "independent_test_command": "pytest tests/test_calc.py",
+  "independent_test_framework": "pytest",
+  "expected_baseline_status": "FAILED",
+  "files": ["calc.py"],
+  "protected_test_files": [
+    "tests/test_calc.py"
+  ],
+  "sample_patch": "--- a/calc.py\n+++ b/calc.py\n@@ -1,5 +1,5 @@\n def calculate_charge(base: int, fee: int) -> int:\n-    return base\n+    return fee\n"
+}

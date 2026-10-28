@@ -1,0 +1,14 @@
+{
+  "id": "test_timeout",
+  "name": "Test execution timeout",
+  "category": "timeout",
+  "description": "Infinite loop inside test execution causes process to exceed configured runner timeout.",
+  "expected_behavior": "Runner terminates process cleanly and verification policy records TIMEOUT status.",
+  "test_command": "pytest",
+  "test_framework": "pytest",
+  "eligible_for_repair": false,
+  "expected_baseline_exit_code": null,
+  "expected_baseline_status": "TIMEOUT",
+  "expected_post_status": "TIMEOUT",
+  "relative_path": "test_timeout"
+}

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "FixForge"
+description = "An autonomous software repair platform foundation for analyzing repositories, tracking repair jobs, and verifying fixes with execution evidence."
+version = "1.0.0"
+id = "artifacts/fixforge"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22849
+
+[services.development]
+run = "pnpm --filter @workspace/fixforge run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/fixforge", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/fixforge/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22849"
+BASE_PATH = "/"

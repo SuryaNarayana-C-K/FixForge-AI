@@ -1,0 +1,19 @@
+{
+  "id": "live_py_user_service",
+  "name": "Live Python User Profile Parsing Defect",
+  "language": "python",
+  "category": "exception",
+  "eligible_for_repair": true,
+  "test_command": "pytest tests/test_user.py tests/test_regression.py",
+  "test_framework": "pytest",
+  "target_test_file": "tests/test_user.py",
+  "independent_test_command": "pytest independent_tests/test_user_held_out.py",
+  "independent_test_framework": "pytest",
+  "expected_baseline_status": "FAILED",
+  "files": ["user_service.py"],
+  "protected_test_files": [
+    "tests/test_user.py",
+    "tests/test_regression.py"
+  ],
+  "sample_patch": "--- a/user_service.py\n+++ b/user_service.py\n@@ -3,3 +3,3 @@\n     first = data[\"first_name\"].strip()\n-    middle = data[\"middle_name\"].strip() if data[\"middle_name\"] else \"\"\n+    middle = data[\"middle_name\"].strip() if data.get(\"middle_name\") else \"\"\n     last = data[\"last_name\"].strip()\n"
+}

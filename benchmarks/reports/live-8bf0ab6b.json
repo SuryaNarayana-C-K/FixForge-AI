@@ -1,0 +1,263 @@
+{
+  "run_id": "live-8bf0ab6b",
+  "timestamp": "2026-10-19T04:09:00.017026+00:00",
+  "code_revision": "m12.5-live",
+  "fixture_version": "1.2.5",
+  "execution_mode": "live_repair",
+  "model": "gemini-3.5-flash-lite",
+  "git_commit": "main-m12.5",
+  "environment": {
+    "os": "windows",
+    "python_version": "3.14",
+    "execution_mode": "live_repair",
+    "model": "gemini-3.5-flash-lite",
+    "git_commit": "main-m12.5"
+  },
+  "metrics": {
+    "total_cases": 1,
+    "completed_cases": 1,
+    "eligible_repair_cases": 1,
+    "eligible_completed_cases": 1,
+    "correct_repairs": 1,
+    "repaired_count": 1,
+    "repair_success_rate": 1.0,
+    "failed_repairs": 0,
+    "false_verified_count": 0,
+    "false_verified_rate": 0.0,
+    "regressions_introduced": 0,
+    "regression_cases_count": 0,
+    "regression_rate": 0.0,
+    "invalid_patches_accepted": 0,
+    "patch_rejection_rate": null,
+    "unnecessary_files_modified": 0,
+    "diagnosis_cases": 0,
+    "correct_diagnoses": 0,
+    "diagnosis_accuracy": null,
+    "abstention_cases": 0,
+    "correct_abstentions": 0,
+    "abstention_accuracy": null,
+    "abstained_cases_count": 0,
+    "abstention_rate": 0.0,
+    "unintended_abstentions": 0,
+    "timeout_cases_count": 0,
+    "timeout_rate": 0.0,
+    "infra_error_cases_count": 0,
+    "infra_error_rate": 0.0,
+    "test_integrity_violations": 0,
+    "invalid_cases_count": 0,
+    "outcome_breakdown": {
+      "REPAIRED": 1
+    },
+    "total_candidates_evaluated": 1,
+    "avg_candidates_per_case": 1.0,
+    "selected_candidates_count": 1,
+    "median_repair_duration_ms": 12592.0,
+    "p95_repair_duration_ms": 12592.0,
+    "avg_model_calls_per_case": 3.0,
+    "total_tokens": null,
+    "total_cost_usd": null,
+    "execution_mode": "live_repair",
+    "definitions": {
+      "repair_success_rate": "repaired_cases / eligible_completed_cases (genuine repairable bugs only)",
+      "regression_rate": "cases_with_regressions / cases_where_regression_checks_completed",
+      "abstention_rate": "abstained_cases / eligible_cases",
+      "timeout_rate": "timed_out_cases / eligible_cases",
+      "infra_error_rate": "infra_error_cases / total_cases",
+      "test_integrity_violations": "cases where test files or protected files were modified by repair agent",
+      "false_verified_rate": "false_verified_count / total_cases (must strictly be 0.0)",
+      "candidate_evaluation": "Isolated candidate patch evaluation in disposable workspaces; ranking by test correctness & Occam's razor.",
+      "token_usage_and_cost": "Reported as null when unavailable from runner/provider; never fabricated as zero."
+    }
+  },
+  "case_results": [
+    {
+      "fixture_id": "live_js_stats",
+      "name": "Live JavaScript Variance Calculation Defect",
+      "category": "arithmetic",
+      "eligible_for_repair": true,
+      "status": "REPAIRED",
+      "is_verified": true,
+      "duration_ms": 12592,
+      "model_calls": 3,
+      "token_usage": null,
+      "cost_usd": null,
+      "baseline_exit_code": 1,
+      "baseline_passed": 2,
+      "baseline_failed": 1,
+      "baseline_total": 3,
+      "post_exit_code": 0,
+      "post_passed": 3,
+      "post_failed": 0,
+      "post_total": 3,
+      "regression_detected": false,
+      "patch_applied": true,
+      "files_modified": [
+        "stats.mjs"
+      ],
+      "diagnosed_hypothesis": null,
+      "diagnosis_accurate": null,
+      "abstention_selected": false,
+      "ranking_score": null,
+      "error_details": null,
+      "reproducible_command": "cd 'C:\\Users\\SURYA NARAYAN C K\\Downloads\\FixForge-main\\FixForge-main\\.benchmark_workspaces\\live-8bf0ab6b\\live_js_stats' && node --test tests/stats.test.mjs tests/regression.test.mjs",
+      "candidate_count": 1,
+      "valid_candidate_count": 1,
+      "candidate_rejections": {},
+      "selected_candidate_id": "cand-1-1",
+      "selection_rationale": null,
+      "candidate_evaluation_duration_ms": 0,
+      "candidates": [],
+      "attempts": [
+        {
+          "attempt": 1,
+          "attempt_number": 1,
+          "status": "PASSED",
+          "root_cause": {
+            "summary": "calculateVariance incorrectly divides by numbers.length - 2 instead of numbers.length for population variance, causing an assertion failure.",
+            "failure_type": "assertion_error",
+            "root_cause": "The calculateVariance function in stats.mjs divides the sum of squared differences by (numbers.length - 2) instead of numbers.length, resulting in a larger actual value (5.333333333333333) than the expected population variance (4).",
+            "observed": "AssertionError: Expected values to be strictly equal: actual 5.333333333333333, expected 4.",
+            "hypothesis": "The division denominator in calculateVariance is incorrectly set to numbers.length - 2 instead of numbers.length, which leads to an overestimation of the population variance.",
+            "evidence": [
+              {
+                "file": "stats.mjs",
+                "line": 13,
+                "reason": "The return statement divides sumSquaredDiffs by (numbers.length - 2).",
+                "observed_behavior": "sumSquaredDiffs / (numbers.length - 2)",
+                "expected_behavior": "sumSquaredDiffs / numbers.length",
+                "failing_test": "calculateVariance computes population variance"
+              }
+            ],
+            "confidence": 1.0,
+            "hypotheses": [
+              {
+                "hypothesis_id": "hyp-1",
+                "root_cause_statement": "calculateVariance divides by numbers.length - 2 instead of numbers.length when calculating population variance.",
+                "relevant_files": [
+                  "stats.mjs:9-14"
+                ],
+                "supporting_evidence": [
+                  "tests/stats.test.mjs:10",
+                  "stats.mjs:13"
+                ],
+                "observed_behavior": "Returns 5.333333333333333 for the test array.",
+                "expected_behavior": "Returns 4.0 for the test array.",
+                "causal_explanation": "Dividing by length - 2 rather than length reduces the denominator incorrectly, producing a higher variance than expected.",
+                "confidence_score": 1.0,
+                "missing_evidence_or_assumptions": [],
+                "proposed_repair_strategy": "Change numbers.length - 2 to numbers.length on line 13 in stats.mjs.",
+                "rank": 1,
+                "ranking_score": 40.0,
+                "ranking_reasons": [
+                  "Does not explicitly reference observed failing test names (+0.0)",
+                  "All cited files verified to exist in repository (1 files) (+15.0)",
+                  "Grounded expected behavior aligns with test assertions (+10.0)",
+                  "Locally bounded repair scope (1-2 files) satisfies Occam's razor (+10.0)",
+                  "Self-assessed confidence weight (1.00 * 5.0 = +5.0)"
+                ]
+              }
+            ],
+            "primary_hypothesis_id": "hyp-1",
+            "abstention_recommended": false,
+            "abstention_reason": null
+          },
+          "root_cause_confidence": 1.0,
+          "patch_plan": {
+            "objective": "Fix the calculateVariance function to correctly divide by numbers.length instead of numbers.length - 2 for population variance calculation.",
+            "files_to_modify": [
+              "stats.mjs"
+            ],
+            "changes": [
+              {
+                "file": "stats.mjs",
+                "location": "line 13",
+                "description": "Change the denominator in calculateVariance from numbers.length - 2 to numbers.length."
+              }
+            ],
+            "risks": [
+              "None, as this restores the correct mathematical formula for population variance matching the test suite."
+            ]
+          },
+          "generated_patch": {
+            "files": [
+              "stats.mjs"
+            ],
+            "diff": "--- a/stats.mjs\n+++ b/stats.mjs\n@@ -10,5 +10,5 @@\n   const mean = calculateMean(numbers);\n   const sumSquaredDiffs = numbers.reduce((acc, n) => acc + Math.pow(n - mean, 2), 0);\n   // BUG: divided by numbers.length - 2 instead of numbers.length\n-  return sumSquaredDiffs / (numbers.length - 2);\n+  return sumSquaredDiffs / numbers.length;\n}",
+            "explanation": "Fix the calculateVariance function to correctly divide by numbers.length instead of numbers.length - 2 for population variance calculation."
+          },
+          "patch_hash": "d3ada8a98384277dd2461c4a6023be6d3f6942575bb09ceabe7061cf967fb35c",
+          "validation": {
+            "valid": true,
+            "status": "VALID",
+            "errors": [],
+            "warnings": [],
+            "files_to_modify": [
+              "stats.mjs"
+            ],
+            "lines_added": 1,
+            "lines_removed": 1
+          },
+          "application": {
+            "applied": true,
+            "status": "APPLIED",
+            "error": null,
+            "files_modified": [
+              "stats.mjs"
+            ],
+            "git_diff_before": "",
+            "git_diff_after": "",
+            "backup_id": "backup-c31c43c0",
+            "timestamp": "2026-10-19T04:08:59.344569+00:00"
+          },
+          "verification": {
+            "status": "PASSED",
+            "exit_code": 0,
+            "passed": 3,
+            "failed": 0,
+            "skipped": 0,
+            "total": 3,
+            "stdout": "\u2714 calculateMean computes correct arithmetic mean (0.5011ms)\n\u2714 calculateMean rejects empty array (0.2847ms)\n\u2714 calculateVariance computes population variance (0.5195ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 3\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 90.897\n",
+            "stderr": "",
+            "duration": 0.15,
+            "timed_out": false,
+            "regression_detected": false,
+            "failure_signatures": [],
+            "new_failures": [],
+            "resolved_failures": [
+              {
+                "test_name": "calculateVariance computes population variance",
+                "file": "tests/stats.test.mjs",
+                "error_type": "AssertionError",
+                "message": "Node test failed: calculateVariance computes population variance",
+                "traceback": "\u2714 calculateMean computes correct arithmetic mean (0.5026ms)\n\u2714 calculateMean rejects empty array (0.2848ms)\n\u2716 calculateVariance computes population variance (2.8206ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 105.3782\n\n\u2716 failing tests:\n\ntest at tests\\stats.test.mjs:5:1\n\u2716 calculateVariance computes population variance (2.8206ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  + actual - expected\n  \n  + 5.333333333333333\n  - 4\n  \n      at TestContext.<anonymous> (file:///C:/Users/SURYA%20NARAYAN%20C%20K/Downloads/FixForge-main/FixForge-main/.benchmark_workspaces/live-8bf0ab6b/live_js_stats/tests/stats.test.mjs:10:10)\n      at Test.runInAsyncScope (node:async_hooks:228:14)\n      at Test.run (node:internal/test_runner/test:1118:25)\n      at Test.start (node:internal/test_runner/test:1015:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 5.333333333333333,\n    expected: 4,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n\n",
+                "source_reference": "tests/stats.test.mjs:5"
+              }
+            ]
+          },
+          "rollback_performed": false,
+          "duration": 0.15,
+          "timestamp": "2026-10-19T04:08:59.651787+00:00"
+        }
+      ],
+      "execution_mode": "live_repair",
+      "independent_tests_passed": true,
+      "test_integrity_violation": false,
+      "test_file_hashes_before": {
+        "tests/stats.test.mjs": "a404487444dab0347d0a18d2623ef45e6701045ce2562abc43114fb4a1753f1e",
+        "tests/regression.test.mjs": "582cbbf603d20848e4bf0af5ecf48ccc695cd9136e5b69c7a384ad9a85ec4260"
+      },
+      "test_file_hashes_after": {
+        "tests/stats.test.mjs": "a404487444dab0347d0a18d2623ef45e6701045ce2562abc43114fb4a1753f1e",
+        "tests/regression.test.mjs": "582cbbf603d20848e4bf0af5ecf48ccc695cd9136e5b69c7a384ad9a85ec4260"
+      },
+      "baseline_precondition_satisfied": true,
+      "infra_error_details": null,
+      "held_out_test_output": "\u2714 calculateVariance on uniform numbers is 0 (0.9788ms)\n\u2714 calculateVariance on small array of length 2 (0.239ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 90.2999\n\n",
+      "regression_details": null,
+      "model_name": "gemini-3.5-flash-lite",
+      "git_commit": null,
+      "bug_id": "live_js_stats",
+      "language": "javascript"
+    }
+  ]
+}

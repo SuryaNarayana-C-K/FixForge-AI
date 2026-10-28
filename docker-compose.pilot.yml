@@ -1,0 +1,200 @@
+# =============================================================================
+# FixForge Autonomous Software Repair Platform — Hardened Pilot Stack (M14)
+# =============================================================================
+# ARCHITECTURE & SECURITY BOUNDARIES:
+# - ZERO PUBLIC EXPOSURE: All host port bindings are restricted to BIND_ADDRESS
+#   (default: 127.0.0.1 for local/VPN/tunnel access, or private IP).
+# - ONLY HTTPS IS REACHABLE: fixforge-proxy (Caddy) terminates TLS on :443
+#   and handles HTTP-to-HTTPS redirect on :80.
+# - API, AI Agent, and Worker have NO exposed host ports. They communicate
+#   strictly over the internal isolated bridge network (pilot-network).
+# - DOCKER SOCKET ISOLATION: Host /var/run/docker.sock is NEVER mounted.
+#   All test execution is performed by the unprivileged rootless daemon
+#   inside fixforge-sandbox-worker over internal authenticated API.
+# - SINGLE-INSTANCE SQLITE: The persistent database volume (pilot-sqlite-data)
+#   is mounted exclusively to the single fixforge-api container at /data.
+# - DEMO AUTH DISABLED: Strict JWT authentication with bcrypt password hashing
+#   is enforced in production mode.
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # 0. FixForge Sandbox Worker (Rootless Docker Daemon in Container)
+  # ---------------------------------------------------------------------------
+  fixforge-sandbox-worker:
+    build:
+      context: ./sandbox-worker
+      dockerfile: Dockerfile
+    image: fixforge/sandbox-worker:1.14.0
+    container_name: fixforge-pilot-worker
+    restart: unless-stopped
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PORT=9000
+      - INTERNAL_WORKER_KEY=${INTERNAL_WORKER_KEY}
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:9000/v1/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - pilot-network
+
+  # ---------------------------------------------------------------------------
+  # 1. FixForge AI Agent Service (Python 3.11 + FastAPI + Remote Sandbox Runner)
+  # ---------------------------------------------------------------------------
+  fixforge-ai:
+    build:
+      context: ./ai-agent
+      dockerfile: Dockerfile
+    image: fixforge/ai-agent:1.14.0
+    container_name: fixforge-pilot-ai
+    restart: unless-stopped
+    user: "1000:1000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PORT=8000
+      - EXECUTION_MODE=docker
+      - EXECUTION_RUNNER=remote
+      - SANDBOX_WORKER_URL=http://fixforge-sandbox-worker:9000
+      - INTERNAL_WORKER_KEY=${INTERNAL_WORKER_KEY}
+      - ALLOW_LOCAL_SUBPROCESS=false
+      - SANDBOX_IMAGE=fixforge-sandbox:latest
+      - SANDBOX_TIMEOUT=120
+      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.0-flash}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - MAX_ITERATIONS=5
+      - HOST_WORKSPACE_ROOT=${HOST_WORKSPACE_ROOT:-.}
+      - FIXFORGE_ENV=production
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+    volumes:
+      - ./repos:/app/repos
+      - ./examples:/app/examples
+    depends_on:
+      fixforge-sandbox-worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')\" || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - pilot-network
+
+  # ---------------------------------------------------------------------------
+  # 2. FixForge API Service (Node.js Express + Prisma SQLite)
+  # ---------------------------------------------------------------------------
+  fixforge-api:
+    build:
+      context: .
+      dockerfile: artifacts/api-server/Dockerfile
+    image: fixforge/api:1.14.0
+    container_name: fixforge-pilot-api
+    restart: unless-stopped
+    user: "1000:1000"
+    command: ["sh", "-c", "npx prisma db push --schema=./lib/db/prisma/schema.prisma --accept-data-loss --skip-generate && node artifacts/api-server/src/index.js"]
+    environment:
+      - NODE_ENV=production
+      - FIXFORGE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=file:/data/fixforge.db
+      - AI_SERVICE_URL=http://fixforge-ai:8000
+      - JWT_SECRET=${JWT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GITHUB_OWNER=${GITHUB_OWNER:-}
+      - GITHUB_REPOSITORY=${GITHUB_REPOSITORY:-}
+      - GIT_PROVIDER=${GIT_PROVIDER:-mock}
+      - CORS_ORIGIN=${CORS_ORIGIN:-https://localhost}
+      - ALLOW_LOCAL_SUBPROCESS=false
+      - MAX_CONCURRENT_REPAIR_JOBS=${MAX_CONCURRENT_REPAIR_JOBS:-4}
+      - MAX_CONCURRENT_PER_USER=${MAX_CONCURRENT_PER_USER:-2}
+      - MAX_REPAIRS_PER_USER_PER_HOUR=${MAX_REPAIRS_PER_USER_PER_HOUR:-50}
+      - MAX_REPAIRS_PER_ORG_PER_HOUR=${MAX_REPAIRS_PER_ORG_PER_HOUR:-200}
+    volumes:
+      - pilot-sqlite-data:/data
+      - ./repos:/app/repos
+      - ./examples:/app/examples
+    depends_on:
+      fixforge-ai:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - pilot-network
+
+  # ---------------------------------------------------------------------------
+  # 3. FixForge Web Frontend (React + Vite SPA served via Nginx internal)
+  # ---------------------------------------------------------------------------
+  fixforge-web:
+    build:
+      context: .
+      dockerfile: artifacts/fixforge/Dockerfile
+    image: fixforge/web:1.14.0
+    container_name: fixforge-pilot-web
+    restart: unless-stopped
+    depends_on:
+      fixforge-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - pilot-network
+
+  # ---------------------------------------------------------------------------
+  # 4. FixForge Private HTTPS Reverse Proxy (Caddy with Automated TLS)
+  # ---------------------------------------------------------------------------
+  fixforge-proxy:
+    image: caddy:2.9-alpine
+    container_name: fixforge-pilot-proxy
+    restart: unless-stopped
+    ports:
+      # Exposes ONLY port 443 (and 80 for HTTPS redirect), bound to private IP
+      - "${BIND_ADDRESS:-127.0.0.1}:443:443"
+      - "${BIND_ADDRESS:-127.0.0.1}:80:80"
+    environment:
+      - PILOT_DOMAIN=${PILOT_DOMAIN:-localhost}
+      - TLS_MODE=${TLS_MODE:-internal}
+    volumes:
+      - ./deploy/pilot/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      fixforge-web:
+        condition: service_healthy
+      fixforge-api:
+        condition: service_healthy
+    networks:
+      - pilot-network
+
+volumes:
+  # Isolated persistent volume strictly dedicated to the single pilot SQLite database
+  pilot-sqlite-data:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local
+
+networks:
+  pilot-network:
+    driver: bridge
