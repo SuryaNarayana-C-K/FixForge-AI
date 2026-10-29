@@ -60,7 +60,11 @@ class GeminiProvider(LLMProvider):
         model: str | None = None,
     ):
         self._raw_api_key = api_key or os.getenv("GEMINI_API_KEY", "")
-        self.model = model or os.getenv("LLM_MODEL", "gemini-2.0-flash")
+        default_model = os.getenv("LLM_MODEL", "gemini-3.1-flash-lite")
+        resolved_model = model or default_model
+        if resolved_model in ("gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-flash", "gemini-3.8-flash"):
+            resolved_model = default_model
+        self.model = resolved_model
         self._client = None
 
         if self._raw_api_key:
@@ -140,8 +144,8 @@ class GeminiProvider(LLMProvider):
                 return response.text or ""
             except Exception as e:
                 err_str = str(e)
-                if ("429" in err_str or "resource_exhausted" in err_str.lower()) and attempt < 3:
-                    wait_sec = 22.0
+                if any(t in err_str.lower() for t in ["429", "503", "resource_exhausted", "unavailable", "high demand", "overloaded"]) and attempt < 3:
+                    wait_sec = 5.0 * (attempt + 1)
                     m = re.search(r"retry in ([\d\.]+)s", err_str, re.IGNORECASE)
                     if m:
                         try:
@@ -189,8 +193,8 @@ class GeminiProvider(LLMProvider):
                 break
             except Exception as e:
                 err_str = str(e)
-                if ("429" in err_str or "resource_exhausted" in err_str.lower()) and attempt < 3:
-                    wait_sec = 22.0
+                if any(t in err_str.lower() for t in ["429", "503", "resource_exhausted", "unavailable", "high demand", "overloaded"]) and attempt < 3:
+                    wait_sec = 5.0 * (attempt + 1)
                     m = re.search(r"retry in ([\d\.]+)s", err_str, re.IGNORECASE)
                     if m:
                         try:

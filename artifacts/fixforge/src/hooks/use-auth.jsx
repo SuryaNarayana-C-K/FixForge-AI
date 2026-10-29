@@ -3,6 +3,11 @@ import { setAuthTokenGetter } from '@workspace/api-client-react';
 
 const TOKEN_KEY = 'fixforge_auth_token';
 
+// Immediately register getter so queries on initial render attach bearer token synchronously
+if (typeof window !== 'undefined') {
+  setAuthTokenGetter(() => localStorage.getItem(TOKEN_KEY));
+}
+
 export const DEMO_PERSONAS = {
   admin: {
     key: 'admin',

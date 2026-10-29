@@ -4,6 +4,16 @@ import { seedDatabase } from "@workspace/db";
 import { jobLifecycleService } from "./services/lifecycle/job-lifecycle-service.js";
 
 import { enforceStartupConfig } from "./lib/config.js";
+import { Agent, setGlobalDispatcher } from "undici";
+
+// Configure HTTP connection pooling and extended headers timeout for AI workflows
+setGlobalDispatcher(
+  new Agent({
+    headersTimeout: 900_000,
+    bodyTimeout: 900_000,
+    connectTimeout: 60_000,
+  })
+);
 
 // Validate environment and fail fast on invalid production configuration
 enforceStartupConfig();
