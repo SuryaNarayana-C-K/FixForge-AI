@@ -13,7 +13,10 @@ export default function Dashboard() {
     const [overview, setOverview] = useState(null);
 
     useEffect(() => {
-        fetch('/api/observability/overview')
+        const token = localStorage.getItem('fixforge_auth_token');
+        fetch('/api/observability/overview', {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
             .then((r) => (r.ok ? r.json() : null))
             .then((d) => { if (d) setOverview(d); })
             .catch(() => {});
@@ -83,21 +86,21 @@ export default function Dashboard() {
       </>}
     </div>
     <div className="mb-8 grid gap-6 xl:grid-cols-[1.15fr_.85fr]">
-      <section className="rounded-xl border border-border bg-card p-5 ff-rise ff-delay-1">
+      <section className="min-w-0 rounded-xl border border-border bg-card p-5 ff-rise ff-delay-1">
         <SectionHeading kicker="Observability" title="Service health"/>
         {services.isLoading ? <LoadingBlock rows={3}/> : services.isError ? <QueryError message="Health check timed out." retry={() => services.refetch()}/> : <><div className="mb-4 flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2.5"><div className="flex items-center gap-2 text-xs font-medium"><span className={`h-2 w-2 rounded-full ${services.data?.status === 'operational' ? 'bg-emerald-500' : 'bg-amber-500'}`}/> Platform {services.data?.status}</div><span className="ff-mono text-[10px] text-muted-foreground">{services.data ? new Date(services.data.checkedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'} checked · API {apiHealth.data?.status || 'checking'}</span></div>{serviceList.length ? serviceList.map((service) => <ServiceRow key={service.name} service={service}/>) : <EmptyState title="No services reported" message="The health endpoint returned an empty service roster."/>}</>}
       </section>
-      <section className="rounded-xl border border-border bg-card p-5 ff-rise ff-delay-2">
+      <section className="min-w-0 rounded-xl border border-border bg-card p-5 ff-rise ff-delay-2">
         <SectionHeading kicker="Live feed" title="Recent activity" href="/repairs"/>
         {activity.isLoading ? <LoadingBlock rows={4}/> : activity.isError ? <QueryError message="Activity feed is unavailable." retry={() => activity.refetch()}/> : activity.data?.length ? activity.data.map((event) => <ActivityRow key={event.id} event={event}/>) : <EmptyState title="No activity yet" message="Your repair events will appear here once the first job starts." action={<Link href="/new-repair" data-testid="link-empty-activity" className="text-xs font-semibold text-accent-foreground hover:underline">Start your first repair</Link>}/>}
       </section>
     </div>
     <div className="grid gap-6 xl:grid-cols-[.85fr_1.15fr]">
-      <section className="rounded-xl border border-border bg-card p-5 ff-rise ff-delay-2">
+      <section className="min-w-0 rounded-xl border border-border bg-card p-5 ff-rise ff-delay-2">
         <SectionHeading kicker="Your workspace" title="Current projects"/>
         {projects.isLoading ? <LoadingBlock rows={3}/> : projects.isError ? <QueryError message="Projects could not be loaded." retry={() => projects.refetch()}/> : projectList.length ? <div className="-mx-4">{projectList.slice(0, 5).map((project) => <ProjectRow key={project.id} project={project}/>)}</div> : <EmptyState title="No projects yet" message="Create a project while starting your first repair." action={<Link href="/new-repair" data-testid="link-empty-projects" className="text-xs font-semibold text-accent-foreground hover:underline">Create a project</Link>}/>}
       </section>
-      <section className="rounded-xl border border-border bg-card p-5 ff-rise ff-delay-3">
+      <section className="min-w-0 rounded-xl border border-border bg-card p-5 ff-rise ff-delay-3">
         <SectionHeading kicker="Execution log" title="Latest repairs" href="/repairs"/>
         <div className="hidden grid-cols-[1.6fr_1fr_.7fr_.7fr_auto] gap-4 border-b border-border px-4 pb-3 ff-mono text-[9px] uppercase tracking-[.14em] text-muted-foreground md:grid"><span>Issue / project</span><span>Status</span><span>Progress</span><span>Tests</span><span /></div>
         {repairs.isLoading ? <LoadingBlock rows={4}/> : repairs.isError ? <QueryError message="Repair history is unavailable." retry={() => repairs.refetch()}/> : repairList.length ? <div className="-mx-4">{repairList.slice(0, 6).map((repair) => <RepairRow key={repair.id} repair={repair}/>)}</div> : <EmptyState title="No repair jobs" message="Once you submit an issue, the execution trail will land here." action={<Link href="/new-repair" data-testid="link-empty-repairs" className="text-xs font-semibold text-accent-foreground hover:underline">Queue a repair</Link>}/>}

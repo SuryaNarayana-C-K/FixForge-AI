@@ -76,11 +76,18 @@ export default function Observability() {
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
   const [benchmarkError, setBenchmarkError] = useState(null);
 
+  const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('fixforge_auth_token') : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const fetchRunDetails = async (id) => {
     setSelectedRunId(id);
     setRunDetailsLoading(true);
     try {
-      const res = await fetch(`/api/observability/benchmarks/${id}`);
+      const res = await fetch(`/api/observability/benchmarks/${id}`, {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) throw new Error('Failed to load benchmark run details.');
       const data = await res.json();
       setRunDetails(data);
@@ -103,8 +110,12 @@ export default function Observability() {
       if (executionMode) params.set('executionMode', executionMode);
 
       const [intelRes, trendsRes] = await Promise.all([
-        fetch(`/api/observability/intelligence?${params.toString()}`),
-        fetch(`/api/observability/intelligence/trends?${params.toString()}`),
+        fetch(`/api/observability/intelligence?${params.toString()}`, {
+          headers: getAuthHeaders(),
+        }),
+        fetch(`/api/observability/intelligence/trends?${params.toString()}`, {
+          headers: getAuthHeaders(),
+        }),
       ]);
 
       if (!intelRes.ok || !trendsRes.ok) {
@@ -129,7 +140,9 @@ export default function Observability() {
   const fetchBenchmarkRuns = async () => {
     setBenchmarkLoading(true);
     try {
-      const res = await fetch('/api/observability/benchmarks');
+      const res = await fetch('/api/observability/benchmarks', {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) throw new Error('Failed to fetch benchmark runs.');
       const data = await res.json();
       setBenchmarkRuns(Array.isArray(data) ? data : []);
@@ -153,7 +166,9 @@ export default function Observability() {
     if (!idA || !idB) return;
     setBenchmarkLoading(true);
     try {
-      const res = await fetch(`/api/observability/benchmarks/compare?runA=${idA}&runB=${idB}`);
+      const res = await fetch(`/api/observability/benchmarks/compare?runA=${idA}&runB=${idB}`, {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
         throw new Error(errJson.error || 'Failed to compare benchmark runs.');

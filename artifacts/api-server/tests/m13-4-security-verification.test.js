@@ -753,16 +753,22 @@ describe('FixForge M13.4 — Production Security Verification & Deployment Gate'
     });
 
     it('/api/readyz reports system status and flags unready subsystems', async () => {
-      const res = await fetch(`${baseUrl}/readyz`);
-      // Since the Python AI agent isn't running in this Node test process, readyz should detect that and report offline/unreachable
-      assert.strictEqual(res.status, 503);
-      const data = await res.json();
-      assert.strictEqual(data.status, 'not_ready');
-      assert.strictEqual(data.checks.api, 'ready');
-      assert.strictEqual(data.checks.database, 'ready');
-      assert.ok(['offline', 'unreachable', 'unknown'].includes(data.checks.aiAgent));
-      assert.ok(Array.isArray(data.issues));
-      assert.ok(data.issues.some((i) => i.includes('AI Agent')));
+      const origAiUrl = process.env.AI_SERVICE_URL;
+      process.env.AI_SERVICE_URL = "http://127.0.0.1:59999";
+      try {
+        const res = await fetch(`${baseUrl}/readyz`);
+        // With AI agent pointing to an unreachable port, readyz should detect that and report offline/unreachable
+        assert.strictEqual(res.status, 503);
+        const data = await res.json();
+        assert.strictEqual(data.status, 'not_ready');
+        assert.strictEqual(data.checks.api, 'ready');
+        assert.strictEqual(data.checks.database, 'ready');
+        assert.ok(['offline', 'unreachable', 'unknown'].includes(data.checks.aiAgent));
+        assert.ok(Array.isArray(data.issues));
+        assert.ok(data.issues.some((i) => i.includes('AI Agent')));
+      } finally {
+        process.env.AI_SERVICE_URL = origAiUrl;
+      }
     });
 
     it('jobLifecycleService correctly handles cancellation races and state transitions', async () => {

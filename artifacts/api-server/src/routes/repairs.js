@@ -2203,7 +2203,7 @@ router.post("/repairs/:repairId/verify", async (req, res) => {
     return;
   }
 
-  const v = verifyResult.verification || {};
+  const v = verifyResult.verification || verifyResult || {};
   const isPassed =
     v.status === "PASSED" &&
     v.exit_code === 0 &&
