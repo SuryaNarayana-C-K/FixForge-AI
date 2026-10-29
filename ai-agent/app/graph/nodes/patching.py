@@ -216,7 +216,7 @@ async def patch_generation_node(state: dict[str, Any]) -> dict[str, Any]:
 
     t0 = datetime.now(timezone.utc)
     llm = get_llm_provider()
-    max_cands = min(3, max(1, state.get("max_candidates", 3)))
+    max_cands = min(3, max(1, state.get("max_candidates", 1)))
     attempt = state.get("attempt_number", 1)
     hypotheses = state.get("hypotheses", [])
     primary_hyp_id = state.get("primary_hypothesis_id") or "hyp-1"
